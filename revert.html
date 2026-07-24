@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP Range Tracker</title>
+<style>
+:root {
+  --bg:         #0d1117;
+  --surface:    #161b22;
+  --border:     #21262d;
+  --border-h:   #30363d;
+  --text:       #e6edf3;
+  --muted:      #8b949e;
+  --dim:        #484f58;
+  --green:      #2ea043;
+  --green-t:    #3fb950;
+  --green-bg:   #0a1f0e;
+  --red:        #da3633;
+  --red-t:      #f85149;
+  --red-bg:     #1e0a0a;
+  --blue:       #1f6feb;
+  --blue-t:     #58a6ff;
+  --orange:     #f0883e;
+  --orange-dim: #7a4420;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  padding: 24px 20px;
+}
+
+.app { max-width: 960px; margin: 0 auto; }
+
+/* ── Header ── */
+.hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.hdr h1 { font-size: 17px; font-weight: 700; letter-spacing: -.4px; }
+.hdr h1 em { color: var(--blue-t); font-style: normal; }
+.chain-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 1px 10px;
+}
+.hdr .ts { margin-left: auto; font-size: 11px; color: var(--dim); }
+
+/* ── Config ── */
+.cfg {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+}
+.cfg-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.fld { display: flex; flex-direction: column; gap: 4px; }
+.fld label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+.fld input, .fld select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color .15s;
+}
+.fld input { min-width: 280px; }
+.fld input:focus, .fld select:focus { border-color: var(--blue); }
+.fld input::placeholder { color: var(--dim); }
+.fld select { cursor: pointer; }
+
+.btn {
+  background: var(--blue);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  height: 33px;
+  padding: 0 18px;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.btn:hover { background: #388bfd; }
+.btn:disabled { background: var(--border); color: var(--dim); cursor: not-allowed; }
+
+.adv-toggle {
+  font-size: 11px;
+  color: var(--dim);
+  cursor: pointer;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+.adv-toggle:hover { color: var(--muted); }
+.adv-row { display: none; gap: 12px; align-items: flex-end; margin-top: 12px; flex-wrap: wrap; }
+.adv-row.open { display: flex; }
+.adv-row .fld input { min-width: 340px; }
+.adv-hint { font-size: 10px; color: var(--dim); margin-top: 4px; }
+
+.ref-ctl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ref-ctl label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+.ref-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 33px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.ref-inner input[type=checkbox] { cursor: pointer; accent-color: var(--blue); }
+
+/* ── Wallet Section ── */
+.wsec { margin-bottom: 32px; }
+
+.whead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.wtag {
+  background: #0c1f3d;
+  border: 1px solid #1f6feb66;
+  border-radius: 4px;
+  color: var(--blue-t);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+.waddr { color: var(--muted); font-size: 12px; }
+.wlink {
+  font-size: 10px;
+  color: var(--dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  transition: color .15s, border-color .15s;
+}
+.wlink:hover { color: var(--blue-t); border-color: var(--blue); }
+.wstats { margin-left: auto; font-size: 11px; color: var(--dim); }
+.wstats .in-c { color: var(--green-t); }
+.wstats .out-c { color: var(--red-t); }
+
+/* ── Position Card ── */
+.cards { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: border-color .15s;
+}
+.card:hover { border-color: var(--border-h); border-left-color: inherit; }
+.card.in  { border-left-color: var(--green); }
+.card.out { border-left-color: var(--red); }
+
+.ctop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pair { font-size: 15px; font-weight: 700; }
+.fee {
+  background: var(--border);
+  border-radius: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  padding: 1px 6px;
+}
+.badge {
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  margin-left: auto;
+  padding: 2px 8px;
+}
+.badge.in  { background: var(--green-bg); border: 1px solid #2ea04366; color: var(--green-t); }
+.badge.out { background: var(--red-bg);   border: 1px solid #da363366; color: var(--red-t); }
+
+.price-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-bottom: 14px;
+}
+.pcell { display: flex; flex-direction: column; gap: 1px; }
+.pcell.c { text-align: center; }
+.pcell.r { text-align: right; }
+.plbl { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .4px; }
+.pval { font-size: 13px; font-weight: 600; }
+.pval.cur { color: var(--orange); }
+.pval.ok  { color: var(--green-t); }
+.pval.no  { color: var(--red-t); }
+.punit { font-size: 10px; color: var(--dim); }
+.pdist { font-size: 10px; color: var(--dim); margin-top: 1px; }
+.pdist.pos { color: #3a6040; }
+.pdist.neg { color: #6b2e2e; }
+
+/* ── Range Bar ── */
+.bar-wrap {
+  position: relative;
+  padding-top: 22px;
+  margin-bottom: 2px;
+}
+
+.cur-pin {
+  position: absolute;
+  top: 0;
+  font-size: 10px;
+  color: var(--orange);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+.cur-pin::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 6px;
+  background: var(--orange-dim);
+  margin: 2px auto 0;
+}
+
+.track {
+  position: relative;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: visible;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 5px;
+}
+.fill.in  { background: linear-gradient(90deg, #1a5c2a, var(--green), #1a5c2a); }
+.fill.out { background: #3d1515; border: 1px solid #6b2020; }
+
+.cur-line {
+  position: absolute;
+  top: -7px;
+  width: 2px;
+  height: 24px;
+  background: var(--orange);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+.cur-dot {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--orange);
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+.bar-edge {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 10px;
+  color: var(--dim);
+}
+
+/* ── System messages ── */
+.err {
+  background: var(--red-bg);
+  border: 1px solid #da363355;
+  border-radius: 6px;
+  color: var(--red-t);
+  font-size: 12px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 20px 0;
+  text-align: center;
+}
+.loading {
+  color: var(--muted);
+  padding: 28px 0;
+  text-align: center;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--blue-t);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@media (max-width: 680px) {
+  .cfg-row { flex-direction: column; }
+  .fld input { min-width: 100%; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <h1><em>//</em> LP Range Tracker</h1>
+    <span class="chain-pill" id="chainPill">Uniswap v3</span>
+    <span class="ts" id="ts"></span>
+  </div>
+
+  <div class="cfg">
+    <div class="cfg-row">
+      <div class="fld">
+        <label>Wallet 1</label>
+        <input id="w1" type="text" placeholder="0x..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="fld">
+        <label>Wallet 2</label>
+        <input id="w2" type="text" placeholder="0x..." autocomplete="off" spellcheck="false">
+      </div>
+      <div class="fld">
+        <label>Network</label>
+        <select id="chain">
+          <option value="1">Ethereum</option>
+          <option value="42161">Arbitrum</option>
+          <option value="137">Polygon</option>
+          <option value="10">Optimism</option>
+          <option value="8453">Base</option>
+        </select>
+      </div>
+      <button class="btn" id="loadBtn" onclick="load()">Load</button>
+      <div class="ref-ctl">
+        <label>Auto-refresh</label>
+        <div class="ref-inner">
+          <input type="checkbox" id="autoRef" onchange="setRefresh()">
+          <span id="refLbl">every 60s</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="adv-toggle" onclick="toggleAdv()">
+      <span id="advArrow">▸</span> Advanced (Graph API key)
+    </div>
+    <div class="adv-row" id="advRow">
+      <div class="fld">
+        <label>The Graph API Key</label>
+        <input id="apiKey" type="password" placeholder="optional - required if free endpoints are down">
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end">
+        <div class="adv-hint">Get free key at thegraph.com/studio. Used for decentralized network queries.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<script>
+/* ──────────────────────────────────────────────────────
+   Chain config
+   subgraphId = The Graph decentralized network ID
+   hosted     = legacy hosted service (may be deprecated)
+────────────────────────────────────────────────────── */
+const CHAINS = {
+  1: {
+    name: 'Ethereum',
+    hosted: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
+    subgraphId: '5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
+  },
+  42161: {
+    name: 'Arbitrum',
+    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-arbitrum',
+    subgraphId: 'FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aEM',
+  },
+  137: {
+    name: 'Polygon',
+    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon',
+    subgraphId: '3hCPRGf4z88VC5rsBKU5AA9FBBq5nF3jbKJG7VZCbhjm',
+  },
+  10: {
+    name: 'Optimism',
+    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis',
+    subgraphId: 'Cghf4LfVqPiFw6fp6Y5X5Ubc8UpmUhSfJL82zwiBFLaj',
+  },
+  8453: {
+    name: 'Base',
+    hosted: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3-base',
+    subgraphId: 'GqzP4Xaehti8KSfQmv3ZctFSjnSUYZ4En5NRsiTbvZpz',
+  },
+};
+
+const GQL = `
+query($owner: String!) {
+  positions(
+    first: 100
+    where: { owner: $owner }
+    orderBy: liquidity
+    orderDirection: desc
+  ) {
+    id
+    tickLower { tickIdx }
+    tickUpper { tickIdx }
+    liquidity
+    pool {
+      sqrtPrice
+      tick
+      feeTier
+      token0 { symbol decimals }
+      token1 { symbol decimals }
+    }
+  }
+}`;
+
+/* ──────────────────────────────────────────────────────
+   Math helpers
+────────────────────────────────────────────────────── */
+// Stablecoins: when token0 is stable, we flip price to show asset/stable
+const STABLES = new Set(['USDC','USDT','DAI','FRAX','BUSD','LUSD','crvUSD','FDUSD','PYUSD','GHO','USDE','SUSD','USDe','USDBC','USDB']);
+
+function t2p(tick, d0, d1) {
+  return Math.pow(1.0001, tick) * Math.pow(10, d0 - d1);
+}
+
+function fmt(p) {
+  if (!isFinite(p) || isNaN(p) || p <= 0) return '-';
+  if (p >= 1e9)  return (p / 1e9).toFixed(3) + 'B';
+  if (p >= 1e6)  return (p / 1e6).toFixed(3) + 'M';
+  if (p >= 1e4)  return p.toLocaleString('en', { maximumFractionDigits: 0 });
+  if (p >= 1000) return p.toFixed(1);
+  if (p >= 1)    return p.toFixed(4);
+  if (p >= 0.01) return p.toFixed(6);
+  return p.toExponential(3);
+}
+
+function fmtPct(v) {
+  const sign = v >= 0 ? '+' : '';
+  return sign + v.toFixed(2) + '%';
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// Returns display-ready tick/decimal/label config
+// Flips price if token0 is a stablecoin (so we show "ETH price in USDC" not "USDC per ETH")
+function displayCfg(pos) {
+  const p   = pos.pool;
+  const s0  = p.token0.symbol;
+  const s1  = p.token1.symbol;
+  const d0  = parseInt(p.token0.decimals);
+  const d1  = parseInt(p.token1.decimals);
+  const tL  = parseInt(pos.tickLower.tickIdx);
+  const tU  = parseInt(pos.tickUpper.tickIdx);
+  const tC  = parseInt(p.tick);
+
+  const flip = STABLES.has(s0) && !STABLES.has(s1);
+
+  if (flip) {
+    // Inverted: tick -> -tick, decimals swap
+    return {
+      tL: -tU, tU: -tL, tC: -tC,
+      d0: d1, d1: d0,
+      pairLabel: `${s1} / ${s0}`,
+      unit: s0,
+    };
+  }
+
+  return {
+    tL, tU, tC,
+    d0, d1,
+    pairLabel: `${s0} / ${s1}`,
+    unit: s1,
+  };
+}
+
+/* ──────────────────────────────────────────────────────
+   Fetch
+────────────────────────────────────────────────────── */
+function getUrl(chainId) {
+  const key   = document.getElementById('apiKey').value.trim();
+  const chain = CHAINS[chainId];
+  if (key && chain.subgraphId) {
+    return `https://gateway.thegraph.com/api/${key}/subgraphs/id/${chain.subgraphId}`;
+  }
+  return chain.hosted;
+}
+
+async function fetchPositions(addr, chainId) {
+  const url = getUrl(chainId);
+  const r   = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: GQL, variables: { owner: addr.toLowerCase() } }),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status} from subgraph`);
+  const j = await r.json();
+  if (j.errors?.length) throw new Error(j.errors[0].message);
+  if (!j.data)          throw new Error('No data returned - subgraph may be deprecated. Try adding a Graph API key.');
+  return j.data.positions;
+}
+
+/* ──────────────────────────────────────────────────────
+   Render
+────────────────────────────────────────────────────── */
+function renderCard(pos) {
+  if (!pos.liquidity || pos.liquidity === '0') return '';
+
+  const p   = pos.pool;
+  const fee = (parseInt(p.feeTier) / 10000).toFixed(2) + '%';
+  const cfg = displayCfg(pos);
+  const { tL, tU, tC, d0, d1, pairLabel, unit } = cfg;
+
+  const inR   = tC >= tL && tC <= tU;
+  const pLow  = t2p(tL, d0, d1);
+  const pHi   = t2p(tU, d0, d1);
+  const pCur  = t2p(tC, d0, d1);
+
+  // Distance to boundaries (%)
+  const dLow  = (pCur - pLow) / pCur * 100;
+  const dHi   = (pHi - pCur) / pCur * 100;
+
+  // Bar geometry (tick-space, linear = log-price scale)
+  const buf    = Math.max((tU - tL) * 0.55, 400);
+  const winMin = Math.min(tL - buf, tC - buf * 0.7);
+  const winMax = Math.max(tU + buf, tC + buf * 0.7);
+  const winW   = winMax - winMin;
+
+  const pct = (tick) => clamp((tick - winMin) / winW * 100, 0, 100);
+  const pL  = pct(tL);
+  const pU  = pct(tU);
+  const pC  = pct(tC);
+
+  const pWinLow = t2p(winMin, d0, d1);
+  const pWinHi  = t2p(winMax, d0, d1);
+
+  const distHtml = inR
+    ? `<span class="pdist pos">${fmtPct(dLow)} to low</span>`
+    + ` <span style="color:var(--dim)">·</span> `
+    + `<span class="pdist pos">${fmtPct(dHi)} to high</span>`
+    : pCur < pLow
+    ? `<span class="pdist neg">price is ${fmtPct(dLow)} below lower</span>`
+    : `<span class="pdist neg">price is ${fmtPct(dHi)} above upper</span>`;
+
+  return `
+<div class="card ${inR ? 'in' : 'out'}">
+  <div class="ctop">
+    <span class="pair">${pairLabel}</span>
+    <span class="fee">${fee}</span>
+    <span class="badge ${inR ? 'in' : 'out'}">${inR ? '● IN RANGE' : '● OUT OF RANGE'}</span>
+  </div>
+  <div class="price-row">
+    <div class="pcell">
+      <span class="plbl">Lower</span>
+      <span class="pval">${fmt(pLow)}</span>
+      <span class="punit">${unit}</span>
+    </div>
+    <div class="pcell c">
+      <span class="plbl">Current</span>
+      <span class="pval ${inR ? 'ok' : 'no'}">${fmt(pCur)}</span>
+      <span class="punit">${unit}</span>
+      <span class="pdist" style="margin-top:3px">${distHtml}</span>
+    </div>
+    <div class="pcell r">
+      <span class="plbl">Upper</span>
+      <span class="pval">${fmt(pHi)}</span>
+      <span class="punit">${unit}</span>
+    </div>
+  </div>
+  <div class="bar-wrap">
+    <span class="cur-pin" style="left:${pC.toFixed(2)}%">▼ ${fmt(pCur)}</span>
+    <div class="track">
+      <div class="fill ${inR ? 'in' : 'out'}"
+           style="left:${pL.toFixed(2)}%;width:${(pU-pL).toFixed(2)}%"></div>
+      <div class="cur-line" style="left:${pC.toFixed(2)}%">
+        <div class="cur-dot"></div>
+      </div>
+    </div>
+    <div class="bar-edge">
+      <span>${fmt(pWinLow)}</span>
+      <span>${fmt(pWinHi)}</span>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderWallet(n, addr, chainId, positions, err) {
+  const revertUrl = `https://revert.finance/#/account/${addr}?network=${chainId}`;
+
+  let body;
+  if (err) {
+    body = `<div class="err">Error: ${escHtml(err)}</div>`;
+  } else {
+    const active = (positions || []).filter(p => p.liquidity && p.liquidity !== '0');
+    if (!active.length) {
+      body = `<div class="empty">No active positions found on this network</div>`;
+    } else {
+      const sorted = [...active].sort((a, b) => {
+        const ai = parseInt(a.pool.tick) >= parseInt(a.tickLower.tickIdx)
+                && parseInt(a.pool.tick) <= parseInt(a.tickUpper.tickIdx);
+        const bi = parseInt(b.pool.tick) >= parseInt(b.tickLower.tickIdx)
+                && parseInt(b.pool.tick) <= parseInt(b.tickUpper.tickIdx);
+        return (bi ? 1 : 0) - (ai ? 1 : 0);
+      });
+
+      const inCnt  = sorted.filter(p => {
+        const t = parseInt(p.pool.tick);
+        return t >= parseInt(p.tickLower.tickIdx) && t <= parseInt(p.tickUpper.tickIdx);
+      }).length;
+      const outCnt = sorted.length - inCnt;
+
+      const statsHtml = `
+        <span class="wstats">
+          <span class="in-c">${inCnt} in range</span>
+          <span style="margin:0 5px;color:var(--border)">|</span>
+          <span class="out-c">${outCnt} out</span>
+          <span style="margin:0 5px;color:var(--border)">|</span>
+          ${sorted.length} total
+        </span>`;
+
+      body = statsHtml + `<div class="cards" style="margin-top:10px">${sorted.map(renderCard).join('')}</div>`;
+    }
+  }
+
+  const short = addr.slice(0, 8) + '...' + addr.slice(-6);
+  return `
+<div class="wsec">
+  <div class="whead">
+    <span class="wtag">Wallet ${n}</span>
+    <span class="waddr">${short}</span>
+    <a class="wlink" href="${revertUrl}" target="_blank" rel="noopener">revert.finance ↗</a>
+    ${!err ? '' : ''}
+  </div>
+  ${body}
+</div>`;
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+/* ──────────────────────────────────────────────────────
+   Controller
+────────────────────────────────────────────────────── */
+let _refreshTimer = null;
+let _lastWallets  = [];
+let _lastChain    = 1;
+
+async function load() {
+  const w1      = document.getElementById('w1').value.trim();
+  const w2      = document.getElementById('w2').value.trim();
+  const chainId = parseInt(document.getElementById('chain').value);
+  const btn     = document.getElementById('loadBtn');
+  const out     = document.getElementById('out');
+
+  _lastChain   = chainId;
+  _lastWallets = [w1, w2].filter(w => /^0x[0-9a-fA-F]{40}$/.test(w));
+
+  document.getElementById('chainPill').textContent =
+    `Uniswap v3 - ${CHAINS[chainId]?.name ?? chainId}`;
+
+  if (!_lastWallets.length) {
+    out.innerHTML = '<div class="err">Enter at least one valid 0x address (42 chars)</div>';
+    return;
+  }
+
+  btn.disabled      = true;
+  btn.textContent   = 'Loading...';
+  out.innerHTML     = `<div class="loading"><span class="spin"></span>Fetching from ${CHAINS[chainId]?.name}...</div>`;
+
+  const results = await Promise.all(
+    _lastWallets.map((w, i) =>
+      fetchPositions(w, chainId)
+        .then(pos => ({ n: i+1, w, pos, err: null }))
+        .catch(e  => ({ n: i+1, w, pos: null, err: e.message }))
+    )
+  );
+
+  // Persist wallet addresses
+  try { localStorage.setItem('lp_cfg', JSON.stringify({ w1, w2, chainId })); } catch(_) {}
+
+  out.innerHTML = results.map(r => renderWallet(r.n, r.w, chainId, r.pos, r.err)).join('');
+
+  document.getElementById('ts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  btn.disabled    = false;
+  btn.textContent = 'Refresh';
+}
+
+function setRefresh() {
+  clearInterval(_refreshTimer);
+  _refreshTimer = null;
+  if (document.getElementById('autoRef').checked) {
+    let remaining = 60;
+    const tick = () => {
+      remaining--;
+      document.getElementById('refLbl').textContent = `refresh in ${remaining}s`;
+      if (remaining <= 0) {
+        remaining = 60;
+        load();
+      }
+    };
+    _refreshTimer = setInterval(tick, 1000);
+  } else {
+    document.getElementById('refLbl').textContent = 'every 60s';
+  }
+}
+
+function toggleAdv() {
+  const row = document.getElementById('advRow');
+  const arr = document.getElementById('advArrow');
+  const open = row.classList.toggle('open');
+  arr.textContent = open ? '▾' : '▸';
+}
+
+/* ── Init ── */
+try {
+  const saved = JSON.parse(localStorage.getItem('lp_cfg') || '{}');
+  if (saved.w1)      document.getElementById('w1').value    = saved.w1;
+  if (saved.w2)      document.getElementById('w2').value    = saved.w2;
+  if (saved.chainId) document.getElementById('chain').value = saved.chainId;
+} catch(_) {}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') load(); });
+</script>
+</body>
+</html>
