@@ -122,7 +122,6 @@ body {
 }
 .range-bar {
   position: absolute;
-  left: 4px; right: 4px;
   border-radius: 3px;
   cursor: default;
   transition: opacity .15s;
@@ -303,6 +302,23 @@ function fmtUsd(v) {
   return '$' + v.toFixed(0);
 }
 
+// Assign horizontal lanes to non-overlapping groups so all bars are visible
+function assignLanes(sorted) {
+  const lanes = sorted.map(() => -1);
+  for (let i = 0; i < sorted.length; i++) {
+    const used = new Set();
+    for (let j = 0; j < i; j++) {
+      if (sorted[j].pLow < sorted[i].pHi && sorted[j].pHi > sorted[i].pLow)
+        used.add(lanes[j]);
+    }
+    let lane = 0;
+    while (used.has(lane)) lane++;
+    lanes[i] = lane;
+  }
+  const total = Math.max(...lanes) + 1;
+  return lanes.map(l => ({ lane: l, total }));
+}
+
 // Uniswap v3 token amounts from liquidity + ticks
 function calcAmounts(liquidity, tL, tU, tC, dd0, dd1) {
   const L  = Number(liquidity);
@@ -413,8 +429,9 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
   const yPct = p => (1 - (p - globalMin) / range) * 100;
   const curY  = yPct(pCur);
 
+  const laneInfo = assignLanes(sorted);
   let bars = '';
-  sorted.forEach(pos => {
+  sorted.forEach((pos, idx) => {
     const yTop  = yPct(pos.pHi);
     const yBot  = yPct(pos.pLow);
     const top   = yTop.toFixed(2) + '%';
@@ -422,10 +439,15 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
     const cls   = pos.inR ? 'in' : 'out';
     const dLow  = (pCur - pos.pLow) / pCur * 100;
     const dHi   = (pos.pHi - pCur)  / pCur * 100;
+    const { lane, total } = laneInfo[idx];
+    const pctW  = 100 / total;
+    const lPct  = (lane * pctW).toFixed(2);
+    const rPct  = ((total - lane - 1) * pctW).toFixed(2);
+    const laneStyle = `left:calc(${lPct}% + 3px);right:calc(${rPct}% + 3px);`;
     const tip   = pos.inR
-      ? `${fmt(pos.pLow)} - ${fmt(pos.pHi)} ${pos.unit} | ${fmtPct(dLow)} / ${fmtPct(dHi)}`
-      : `${fmt(pos.pLow)} - ${fmt(pos.pHi)} ${pos.unit}`;
-    bars += `<div class="range-bar ${cls}" style="top:${top};height:${ht}"><span class="tip">${tip}</span></div>`;
+      ? `#${pos.id} ${fmt(pos.pLow)}-${fmt(pos.pHi)} ${pos.unit} | ${fmtPct(dLow)} / ${fmtPct(dHi)}`
+      : `#${pos.id} ${fmt(pos.pLow)}-${fmt(pos.pHi)} ${pos.unit}`;
+    bars += `<div class="range-bar ${cls}" style="top:${top};height:${ht};${laneStyle}"><span class="tip">${tip}</span></div>`;
   });
 
   const inCnt  = sorted.filter(p => p.inR).length;
