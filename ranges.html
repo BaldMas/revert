@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP Ranges - Both Wallets</title>
+<style>
+:root {
+  --bg:      #0d1117;
+  --surface: #161b22;
+  --border:  #21262d;
+  --text:    #e6edf3;
+  --muted:   #8b949e;
+  --dim:     #484f58;
+  --green:   #2ea043;
+  --green-t: #3fb950;
+  --green-bg:#0a1f0e;
+  --red:     #da3633;
+  --red-t:   #f85149;
+  --red-bg:  #1e0a0a;
+  --blue-t:  #58a6ff;
+  --orange:  #f0883e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Mono','Cascadia Code','Fira Code',monospace;
+  font-size: 12px;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.hdr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.hdr h1 { font-size: 15px; font-weight: 700; }
+.hdr h1 em { color: var(--blue-t); font-style: normal; }
+.hdr a {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  transition: color .15s, border-color .15s;
+}
+.hdr a:hover { color: var(--blue-t); border-color: var(--blue-t); }
+.ts { font-size: 10px; color: var(--dim); }
+
+/* ── Main layout ── */
+.main {
+  display: flex;
+  gap: 2px;
+  background: var(--border);
+  min-height: calc(100vh - 49px);
+}
+.col {
+  flex: 1;
+  background: var(--bg);
+  padding: 16px;
+  min-width: 0;
+}
+.col-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.wtag {
+  background: #0c1f3d;
+  border: 1px solid #1f6feb66;
+  border-radius: 4px;
+  color: var(--blue-t);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+.waddr { color: var(--muted); font-size: 11px; }
+.cnt { margin-left: auto; font-size: 11px; color: var(--dim); }
+
+/* ── Price chart ── */
+.chart-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.chart {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.cur-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: var(--orange);
+  z-index: 10;
+  pointer-events: none;
+}
+.cur-line::after {
+  content: attr(data-price);
+  position: absolute;
+  right: 6px;
+  top: -9px;
+  font-size: 9px;
+  color: var(--orange);
+  white-space: nowrap;
+  background: var(--surface);
+  padding: 1px 3px;
+}
+.range-bar {
+  position: absolute;
+  left: 4px; right: 4px;
+  border-radius: 3px;
+  cursor: default;
+  transition: opacity .15s;
+}
+.range-bar:hover { opacity: .85; }
+.range-bar.in  { background: linear-gradient(90deg,#1a5c2a,var(--green),#1a5c2a); }
+.range-bar.out { background: var(--red-bg); border: 1px solid #6b2020; }
+.range-bar .tip {
+  display: none;
+  position: absolute;
+  left: 50%; top: -24px;
+  transform: translateX(-50%);
+  background: #1c2128;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 9px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  z-index: 20;
+}
+.range-bar:hover .tip { display: block; }
+
+/* ── Table ── */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.tbl th {
+  text-align: left;
+  color: var(--dim);
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 0 6px 6px;
+  border-bottom: 1px solid var(--border);
+}
+.tbl td {
+  padding: 5px 6px;
+  border-bottom: 1px solid #161b2266;
+  vertical-align: middle;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+.dot.in  { background: var(--green-t); }
+.dot.out { background: var(--red-t); }
+.prange { font-size: 11px; letter-spacing: -.2px; }
+.pwidth { color: var(--muted); font-size: 10px; }
+.dist   { color: var(--dim); font-size: 10px; }
+
+/* ── Loading / error ── */
+.msg { color: var(--muted); padding: 40px 0; text-align: center; font-size: 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin {
+  display: inline-block; width: 13px; height: 13px;
+  border: 2px solid var(--border); border-top-color: var(--blue-t);
+  border-radius: 50%; animation: spin .8s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1><em>//</em> LP Ranges</h1>
+  <span class="ts" id="ts"></span>
+  <a href="index.html">LP Range Tracker</a>
+  <a href="https://revert.finance/#/account/0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f?filter-network=base"
+     target="_blank" rel="noopener">W1 revert ↗</a>
+  <a href="https://revert.finance/#/account/0x2534acb6365e902c986a7aAaB3e9761f92D97693?filter-network=base"
+     target="_blank" rel="noopener">W2 revert ↗</a>
+</div>
+
+<div class="main">
+  <div class="col" id="col1">
+    <div class="msg"><span class="spin"></span>Loading wallet 1...</div>
+  </div>
+  <div class="col" id="col2">
+    <div class="msg"><span class="spin"></span>Loading wallet 2...</div>
+  </div>
+</div>
+
+<script>
+/* ── Config ── */
+const WALLETS = [
+  { n: 1, addr: '0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f' },
+  { n: 2, addr: '0x2534acb6365e902c986a7aAaB3e9761f92D97693' },
+];
+const CHAIN = {
+  rpc:       'https://base-rpc.publicnode.com',
+  pm:        '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1',
+  factory:   '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
+  batchSize: 50,
+};
+
+/* ── ABI helpers (same as index.html) ── */
+const encA = a => '000000000000000000000000' + a.slice(2).toLowerCase();
+const encU = n => BigInt(n).toString(16).padStart(64, '0');
+const dU   = (h, s) => { const x = h.replace(/^0x/,''); return BigInt('0x' + x.slice(s*64, s*64+64)); };
+const dI   = (h, s) => { const r = dU(h, s); return r >= 2n**255n ? r - 2n**256n : r; };
+const dAddr= (h, s) => { const x = h.replace(/^0x/,''); return '0x' + x.slice(s*64+24, s*64+64); };
+function dSym(h) {
+  if (!h || h === '0x' || h.length < 66) return '?';
+  const x = h.replace(/^0x/,'');
+  if (BigInt('0x'+x.slice(0,64)) === 0x20n && x.length >= 192) {
+    try {
+      const len = Number(BigInt('0x'+x.slice(64,128)));
+      if (len > 0 && len <= 50) {
+        const b = new Uint8Array(x.slice(128,128+len*2).match(/.{2}/g).map(v=>parseInt(v,16)));
+        return new TextDecoder().decode(b);
+      }
+    } catch(_) {}
+  }
+  const bytes = [];
+  for (let i = 0; i < 64; i += 2) { const b = parseInt(x.slice(i,i+2),16); if (!b) break; bytes.push(b); }
+  return bytes.length ? String.fromCharCode(...bytes) : '?';
+}
+
+const SEL = {
+  balanceOf:           '0x70a08231',
+  tokenOfOwnerByIndex: '0x2f745c59',
+  positions:           '0x99fbab88',
+  getPool:             '0x1698ee82',
+  slot0:               '0x3850c7bd',
+  symbol:              '0x95d89b41',
+  decimals:            '0x313ce567',
+};
+const ZERO = '0x0000000000000000000000000000000000000000';
+const STABLES = new Set(['USDC','USDT','DAI','FRAX','BUSD','LUSD','crvUSD','USDBC','USDB','USDe']);
+
+async function rpcBatch(calls, size = 50) {
+  const out = [];
+  for (let i = 0; i < calls.length; i += size) {
+    const ch = calls.slice(i, i + size);
+    const body = ch.map((c, j) => ({ jsonrpc: '2.0', id: j, method: 'eth_call', params: [c, 'latest'] }));
+    const r = await fetch(CHAIN.rpc, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+    const arr = await r.json();
+    if (Array.isArray(arr)) {
+      const tmp = new Array(ch.length).fill(null);
+      for (const item of arr) if (typeof item.id === 'number') tmp[item.id] = item.result || null;
+      out.push(...tmp);
+    } else {
+      for (const c of ch) {
+        try {
+          const sr = await fetch(CHAIN.rpc, { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[c,'latest']}),
+            signal: AbortSignal.timeout(12000) });
+          const sj = await sr.json();
+          out.push(sj.result || null);
+        } catch(_) { out.push(null); }
+      }
+    }
+  }
+  return out;
+}
+
+function t2p(tick, d0, d1) { return Math.pow(1.0001, tick) * Math.pow(10, d0 - d1); }
+function fmt(p) {
+  if (!isFinite(p) || isNaN(p) || p <= 0) return '-';
+  if (p >= 1e6)  return (p/1e6).toFixed(2)+'M';
+  if (p >= 1e4)  return p.toLocaleString('en', {maximumFractionDigits:0});
+  if (p >= 1000) return p.toFixed(1);
+  if (p >= 1)    return p.toFixed(2);
+  if (p >= .01)  return p.toFixed(4);
+  return p.toExponential(3);
+}
+function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+
+async function fetchPositions(wallet) {
+  const balHex = await (await fetch(CHAIN.rpc, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:CHAIN.pm,data:SEL.balanceOf+encA(wallet)},'latest']}),
+    signal: AbortSignal.timeout(12000),
+  })).json().then(j => j.result);
+
+  const bal = Number(dU(balHex, 0));
+  if (bal === 0) return [];
+
+  const idxCalls = Array.from({length:bal},(_,i) => ({to:CHAIN.pm, data:SEL.tokenOfOwnerByIndex+encA(wallet)+encU(i)}));
+  const idxRes   = await rpcBatch(idxCalls);
+  const tokenIds = idxRes.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean);
+
+  const posRes = await rpcBatch(tokenIds.map(id => ({to:CHAIN.pm, data:SEL.positions+encU(id)})));
+  const raw = posRes.map((r,i) => {
+    if (!r || r.length < 770) return null;
+    const liq = dU(r, 7);
+    if (liq === 0n) return null;
+    return { id: tokenIds[i].toString(), token0: dAddr(r,2), token1: dAddr(r,3),
+             fee: Number(dU(r,4)), tickLower: Number(dI(r,5)), tickUpper: Number(dI(r,6)), liquidity: liq };
+  }).filter(Boolean);
+  if (!raw.length) return [];
+
+  const uniqueKeys = [...new Map(raw.map(p => [`${p.token0}:${p.token1}:${p.fee}`, p])).values()];
+  const poolRes = await rpcBatch(uniqueKeys.map(p => ({to:CHAIN.factory, data:SEL.getPool+encA(p.token0)+encA(p.token1)+encU(p.fee)})));
+  const poolMap = {};
+  uniqueKeys.forEach((p,i) => {
+    if (poolRes[i] && poolRes[i] !== '0x') { const a = dAddr(poolRes[i],0); if (a !== ZERO) poolMap[`${p.token0}:${p.token1}:${p.fee}`] = a; }
+  });
+
+  const uniquePools = [...new Set(Object.values(poolMap))];
+  const s0Res = await rpcBatch(uniquePools.map(a => ({to:a, data:SEL.slot0})));
+  const slot0Map = {};
+  uniquePools.forEach((a,i) => {
+    if (s0Res[i] && s0Res[i].length >= 66)
+      slot0Map[a] = { tick: Number(dI(s0Res[i], 1)) };
+  });
+
+  const uniqueTokens = [...new Set([...raw.map(p=>p.token0),...raw.map(p=>p.token1)])];
+  const tokRes = await rpcBatch(uniqueTokens.flatMap(a => [{to:a,data:SEL.symbol},{to:a,data:SEL.decimals}]));
+  const tokenMap = {};
+  uniqueTokens.forEach((a,i) => {
+    tokenMap[a] = { symbol: dSym(tokRes[i*2]), decimals: tokRes[i*2+1] ? String(Number(dU(tokRes[i*2+1],0))) : '18' };
+  });
+
+  return raw.map(p => {
+    const key   = `${p.token0}:${p.token1}:${p.fee}`;
+    const pAddr = poolMap[key] || ZERO;
+    const s0    = slot0Map[pAddr] || { tick: 0 };
+    const t0    = tokenMap[p.token0] || { symbol:'?', decimals:'18' };
+    const t1    = tokenMap[p.token1] || { symbol:'?', decimals:'18' };
+    const d0 = parseInt(t0.decimals), d1 = parseInt(t1.decimals);
+    const flip  = STABLES.has(t0.symbol) && !STABLES.has(t1.symbol);
+    const tL = flip ? -p.tickUpper : p.tickLower;
+    const tU = flip ? -p.tickLower : p.tickUpper;
+    const tC = flip ? -s0.tick     : s0.tick;
+    const dd0 = flip ? d1 : d0, dd1 = flip ? d0 : d1;
+    const pLow = t2p(tL, dd0, dd1), pHi = t2p(tU, dd0, dd1), pCur = t2p(tC, dd0, dd1);
+    const unit = flip ? t0.symbol : t1.symbol;
+    const base = flip ? t1.symbol : t0.symbol;
+    const inR  = tC >= tL && tC <= tU;
+    return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id };
+  });
+}
+
+/* ── Render column ── */
+function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
+  if (err) {
+    el.innerHTML = `<div class="msg" style="color:#f85149">Error: ${err}</div>`;
+    return;
+  }
+  const short = addr.slice(0,8) + '...' + addr.slice(-6);
+
+  if (!positions.length) {
+    el.innerHTML = `
+      <div class="col-hdr">
+        <span class="wtag">Wallet ${n}</span>
+        <span class="waddr">${short}</span>
+      </div>
+      <div class="msg">No active positions</div>`;
+    return;
+  }
+
+  // Sort from max to min (highest upper bound first)
+  const sorted = [...positions].sort((a,b) => b.pHi - a.pHi);
+  const pCur   = sorted[0].pCur;
+  const range  = globalMax - globalMin;
+
+  // Chart height: 8px per position + some padding
+  const H = Math.max(200, sorted.length * 28 + 40);
+
+  // Y position helpers (price → % from top, since higher price = top)
+  const yPct = p => (1 - (p - globalMin) / range) * 100;
+  const curY  = yPct(pCur);
+
+  let bars = '';
+  sorted.forEach(pos => {
+    const yTop  = yPct(pos.pHi);
+    const yBot  = yPct(pos.pLow);
+    const top   = yTop.toFixed(2) + '%';
+    const ht    = Math.max(1, yBot - yTop).toFixed(2) + '%';
+    const cls   = pos.inR ? 'in' : 'out';
+    const dLow  = (pCur - pos.pLow) / pCur * 100;
+    const dHi   = (pos.pHi - pCur)  / pCur * 100;
+    const tip   = pos.inR
+      ? `${fmt(pos.pLow)} - ${fmt(pos.pHi)} ${pos.unit} | ${fmtPct(dLow)} / ${fmtPct(dHi)}`
+      : `${fmt(pos.pLow)} - ${fmt(pos.pHi)} ${pos.unit}`;
+    bars += `<div class="range-bar ${cls}" style="top:${top};height:${ht}"><span class="tip">${tip}</span></div>`;
+  });
+
+  const inCnt  = sorted.filter(p => p.inR).length;
+  const outCnt = sorted.length - inCnt;
+  const unit   = sorted[0].unit;
+
+  // Table rows
+  let rows = '';
+  sorted.forEach(pos => {
+    const inR    = pos.inR;
+    const dLow   = (pCur - pos.pLow) / pCur * 100;
+    const dHi    = (pos.pHi - pCur)  / pCur * 100;
+    const distTxt = inR
+      ? `<span style="color:#3a6040">${fmtPct(dLow)}</span> <span style="color:var(--dim)">·</span> <span style="color:#3a6040">${fmtPct(dHi)}</span>`
+      : pCur < pos.pLow
+        ? `<span style="color:#6b2e2e">${fmtPct(dLow)} below</span>`
+        : `<span style="color:#6b2e2e">${fmtPct(dHi)} above</span>`;
+    rows += `<tr>
+      <td><span class="dot ${inR?'in':'out'}"></span>${fmt(pos.pLow)}</td>
+      <td>${fmt(pos.pHi)}</td>
+      <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
+      <td class="dist">${distTxt}</td>
+    </tr>`;
+  });
+
+  el.innerHTML = `
+<div class="col-hdr">
+  <span class="wtag">Wallet ${n}</span>
+  <span class="waddr">${short}</span>
+  <span class="cnt">
+    <span style="color:#3fb950">${inCnt} in</span>
+    <span style="color:var(--dim)"> / </span>
+    <span style="color:#f85149">${outCnt} out</span>
+  </span>
+</div>
+<div class="chart-wrap">
+  <div class="chart" style="height:${H}px">
+    <div class="cur-line" data-price="${fmt(pCur)} ${unit}" style="top:${curY.toFixed(2)}%"></div>
+    ${bars}
+  </div>
+</div>
+<table class="tbl">
+  <thead><tr>
+    <th>Lower</th><th>Upper</th><th>Width</th><th>Distance</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>`;
+}
+
+/* ── Main ── */
+async function main() {
+  const [pos1, pos2] = await Promise.all(
+    WALLETS.map(w =>
+      fetchPositions(w.addr)
+        .then(p => ({ ok: true, pos: p }))
+        .catch(e => ({ ok: false, err: e.message }))
+    )
+  );
+
+  const all = [...(pos1.pos || []), ...(pos2.pos || [])];
+  const globalMin = Math.min(...all.map(p => p.pLow)) * 0.97;
+  const globalMax = Math.max(...all.map(p => p.pHi))  * 1.03;
+
+  renderCol(document.getElementById('col1'), 1, WALLETS[0].addr, pos1.pos || [], globalMin, globalMax, pos1.err);
+  renderCol(document.getElementById('col2'), 2, WALLETS[1].addr, pos2.pos || [], globalMin, globalMax, pos2.err);
+
+  document.getElementById('ts').textContent = 'Base · Updated ' + new Date().toLocaleTimeString();
+}
+
+main().catch(e => {
+  document.getElementById('col1').innerHTML = `<div class="msg" style="color:#f85149">${e.message}</div>`;
+});
+</script>
+</body>
+</html>
