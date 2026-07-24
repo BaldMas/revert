@@ -415,8 +415,9 @@ const CHAINS = {
       'https://ethereum-rpc.publicnode.com',
       'https://rpc.ankr.com/eth',
     ],
-    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
-    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    pm:        '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory:   '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    batchSize: 80,
   },
   42161: {
     name: 'Arbitrum',
@@ -425,8 +426,9 @@ const CHAINS = {
       'https://arbitrum-one-rpc.publicnode.com',
       'https://rpc.ankr.com/arbitrum',
     ],
-    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
-    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    pm:        '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory:   '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    batchSize: 80,
   },
   137: {
     name: 'Polygon',
@@ -435,8 +437,9 @@ const CHAINS = {
       'https://polygon-bor-rpc.publicnode.com',
       'https://rpc.ankr.com/polygon',
     ],
-    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
-    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    pm:        '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory:   '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    batchSize: 80,
   },
   10: {
     name: 'Optimism',
@@ -445,18 +448,20 @@ const CHAINS = {
       'https://optimism-rpc.publicnode.com',
       'https://rpc.ankr.com/optimism',
     ],
-    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
-    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    pm:        '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory:   '0x1F98431c8aD98523631AE4a59f267346ea31F984',
+    batchSize: 80,
   },
   8453: {
     name: 'Base',
     rpc: [
-      'https://mainnet.base.org',
       'https://base-rpc.publicnode.com',
-      'https://rpc.ankr.com/base',
+      'https://base.llamarpc.com',
+      'https://mainnet.base.org',
     ],
-    pm:      '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1',
-    factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
+    pm:        '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1',
+    factory:   '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
+    batchSize: 50,
   },
 };
 
@@ -651,16 +656,20 @@ function displayCfg(pos) {
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
 async function fetchPositions(wallet, chainId) {
+  const dbg = null;
   const chain = CHAINS[chainId];
   if (!chain) throw new Error('Chain not supported');
 
   const customRpc = document.getElementById('customRpc')?.value.trim();
   const rpcList   = customRpc ? [customRpc, ...chain.rpc] : chain.rpc;
 
+  const bs = chain.batchSize || 80;
+
   return withFallback(rpcList, async (rpc) => {
     // 1. How many LP NFTs does this wallet hold?
     const balHex = await rpcCall(rpc, chain.pm, SEL.balanceOf + encA(wallet));
     const bal = Number(dU(balHex, 0));
+
     if (bal === 0) return [];
 
     // 2. Get all token IDs
@@ -668,18 +677,19 @@ async function fetchPositions(wallet, chainId) {
       to:   chain.pm,
       data: SEL.tokenOfOwnerByIndex + encA(wallet) + encU(i),
     }));
-    const idxRes  = await rpcBatch(rpc, idxCalls);
+    const idxRes  = await rpcBatch(rpc, idxCalls, bs);
     const tokenIds = idxRes.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean);
 
     // 3. Get position data for each token ID
     // positions(uint256) returns: nonce[0], operator[1], token0[2], token1[3],
     //   fee[4], tickLower[5], tickUpper[6], liquidity[7], ...
     const posCalls  = tokenIds.map(id => ({ to: chain.pm, data: SEL.positions + encU(id) }));
-    const posRes    = await rpcBatch(rpc, posCalls);
+    const posRes    = await rpcBatch(rpc, posCalls, bs);
 
     const raw = posRes.map((r, i) => {
       if (!r || r.length < 2 + 12 * 64) return null;
       const liq = dU(r, 7);
+
       if (liq === 0n) return null;
       return {
         id:        tokenIds[i].toString(),
@@ -703,7 +713,7 @@ async function fetchPositions(wallet, chainId) {
       to:   chain.factory,
       data: SEL.getPool + encA(p.token0) + encA(p.token1) + encU(p.fee),
     }));
-    const poolRes = await rpcBatch(rpc, poolCalls);
+    const poolRes = await rpcBatch(rpc, poolCalls, bs);
 
     const poolMap = {};
     uniqueKeys.forEach((p, i) => {
@@ -716,7 +726,7 @@ async function fetchPositions(wallet, chainId) {
     // 5. slot0() on each unique pool → current sqrtPriceX96 and tick
     const uniquePools = [...new Set(Object.values(poolMap))];
     const s0Calls     = uniquePools.map(addr => ({ to: addr, data: SEL.slot0 }));
-    const s0Res       = await rpcBatch(rpc, s0Calls);
+    const s0Res       = await rpcBatch(rpc, s0Calls, bs);
 
     const slot0Map = {};
     uniquePools.forEach((addr, i) => {
@@ -734,7 +744,7 @@ async function fetchPositions(wallet, chainId) {
       { to: addr, data: SEL.symbol },
       { to: addr, data: SEL.decimals },
     ]);
-    const tokRes = await rpcBatch(rpc, tokCalls);
+    const tokRes = await rpcBatch(rpc, tokCalls, bs);
 
     const tokenMap = {};
     uniqueTokens.forEach((addr, i) => {
@@ -743,6 +753,7 @@ async function fetchPositions(wallet, chainId) {
         decimals: tokRes[i * 2 + 1] ? String(Number(dU(tokRes[i * 2 + 1], 0))) : '18',
       };
     });
+
 
     // 7. Assemble into the same shape as the old GraphQL response
     return raw.map(p => {
@@ -816,6 +827,7 @@ function renderCard(pos) {
   <div class="ctop">
     <span class="pair">${pairLabel}</span>
     <span class="fee">${fee}</span>
+    <span style="font-size:11px;color:var(--muted)">(${fmt(pLow)} - ${fmt(pHi)} ${unit} = ${fmt(pHi - pLow)})</span>
     <span class="badge ${inR ? 'in' : 'out'}">${inR ? '● IN RANGE' : '● OUT OF RANGE'}</span>
   </div>
   <div class="price-row">
@@ -898,7 +910,6 @@ function renderWallet(n, addr, chainId, positions, err) {
     <span class="wtag">Wallet ${n}</span>
     <span class="waddr">${short}</span>
     <a class="wlink" href="${revertUrl}" target="_blank" rel="noopener">revert.finance ↗</a>
-    ${!err ? '' : ''}
   </div>
   ${body}
 </div>`;

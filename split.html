@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revert - Both Wallets</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: #0d1117; }
+.wrap {
+  display: flex;
+  height: 100vh;
+  gap: 2px;
+  background: #21262d;
+}
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.label {
+  background: #161b22;
+  color: #8b949e;
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-bottom: 1px solid #21262d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.label strong { color: #58a6ff; }
+iframe {
+  flex: 1;
+  border: none;
+  width: 100%;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pane">
+    <div class="label"><strong>Wallet 1</strong> &nbsp;0x9c16bc8f...cc4a6f</div>
+    <iframe src="https://revert.finance/#/account/0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f?filter-network=base"
+            loading="lazy" title="Wallet 1"></iframe>
+  </div>
+  <div class="pane">
+    <div class="label"><strong>Wallet 2</strong> &nbsp;0x2534acb6...D97693</div>
+    <iframe src="https://revert.finance/#/account/0x2534acb6365e902c986a7aAaB3e9761f92D97693?filter-network=base"
+            loading="lazy" title="Wallet 2"></iframe>
+  </div>
+</div>
+</body>
+</html>
