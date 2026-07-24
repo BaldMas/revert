@@ -363,11 +363,11 @@ body {
     <div class="cfg-row">
       <div class="fld">
         <label>Wallet 1</label>
-        <input id="w1" type="text" placeholder="0x..." autocomplete="off" spellcheck="false">
+        <input id="w1" type="text" value="0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f" autocomplete="off" spellcheck="false">
       </div>
       <div class="fld">
         <label>Wallet 2</label>
-        <input id="w2" type="text" placeholder="0x..." autocomplete="off" spellcheck="false">
+        <input id="w2" type="text" value="0x2534acb6365e902c986a7aAaB3e9761f92D97693" autocomplete="off" spellcheck="false">
       </div>
       <div class="fld">
         <label>Network</label>
@@ -767,8 +767,6 @@ function toggleAdv() {
 /* ── Init ── */
 try {
   const saved = JSON.parse(localStorage.getItem('lp_cfg') || '{}');
-  if (saved.w1)      document.getElementById('w1').value    = saved.w1;
-  if (saved.w2)      document.getElementById('w2').value    = saved.w2;
   if (saved.chainId) document.getElementById('chain').value = saved.chainId;
 } catch(_) {}
 
