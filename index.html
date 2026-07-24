@@ -390,15 +390,12 @@ body {
     </div>
 
     <div class="adv-toggle" onclick="toggleAdv()">
-      <span id="advArrow">▸</span> Advanced (Graph API key)
+      <span id="advArrow">▸</span> Advanced (custom RPC)
     </div>
     <div class="adv-row" id="advRow">
       <div class="fld">
-        <label>The Graph API Key</label>
-        <input id="apiKey" type="password" placeholder="optional - required if free endpoints are down">
-      </div>
-      <div style="display:flex;flex-direction:column;justify-content:flex-end">
-        <div class="adv-hint">Get free key at thegraph.com/studio. Used for decentralized network queries.</div>
+        <label>Custom RPC URL (optional)</label>
+        <input id="customRpc" type="text" placeholder="https://... overrides default public RPCs">
       </div>
     </div>
   </div>
@@ -408,59 +405,185 @@ body {
 
 <script>
 /* ──────────────────────────────────────────────────────
-   Chain config
-   subgraphId = The Graph decentralized network ID
-   hosted     = legacy hosted service (may be deprecated)
+   Chain config - direct on-chain RPC, no API keys
 ────────────────────────────────────────────────────── */
 const CHAINS = {
   1: {
     name: 'Ethereum',
-    hosted: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3',
-    subgraphId: '5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV',
+    rpc: [
+      'https://cloudflare-eth.com',
+      'https://ethereum-rpc.publicnode.com',
+      'https://rpc.ankr.com/eth',
+    ],
+    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
   },
   42161: {
     name: 'Arbitrum',
-    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-arbitrum',
-    subgraphId: 'FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aEM',
+    rpc: [
+      'https://arb1.arbitrum.io/rpc',
+      'https://arbitrum-one-rpc.publicnode.com',
+      'https://rpc.ankr.com/arbitrum',
+    ],
+    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
   },
   137: {
     name: 'Polygon',
-    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-polygon',
-    subgraphId: '3hCPRGf4z88VC5rsBKU5AA9FBBq5nF3jbKJG7VZCbhjm',
+    rpc: [
+      'https://polygon-rpc.com',
+      'https://polygon-bor-rpc.publicnode.com',
+      'https://rpc.ankr.com/polygon',
+    ],
+    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
   },
   10: {
     name: 'Optimism',
-    hosted: 'https://api.thegraph.com/subgraphs/name/ianlapham/optimism-post-regenesis',
-    subgraphId: 'Cghf4LfVqPiFw6fp6Y5X5Ubc8UpmUhSfJL82zwiBFLaj',
+    rpc: [
+      'https://mainnet.optimism.io',
+      'https://optimism-rpc.publicnode.com',
+      'https://rpc.ankr.com/optimism',
+    ],
+    pm:      '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
+    factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984',
   },
   8453: {
     name: 'Base',
-    hosted: 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3-base',
-    subgraphId: 'GqzP4Xaehti8KSfQmv3ZctFSjnSUYZ4En5NRsiTbvZpz',
+    rpc: [
+      'https://mainnet.base.org',
+      'https://base-rpc.publicnode.com',
+      'https://rpc.ankr.com/base',
+    ],
+    pm:      '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1',
+    factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD',
   },
 };
 
-const GQL = `
-query($owner: String!) {
-  positions(
-    first: 100
-    where: { owner: $owner }
-    orderBy: liquidity
-    orderDirection: desc
-  ) {
-    id
-    tickLower { tickIdx }
-    tickUpper { tickIdx }
-    liquidity
-    pool {
-      sqrtPrice
-      tick
-      feeTier
-      token0 { symbol decimals }
-      token1 { symbol decimals }
+/* ──────────────────────────────────────────────────────
+   ABI helpers
+────────────────────────────────────────────────────── */
+// Encode address as 32-byte ABI param
+const encA = addr => '000000000000000000000000' + addr.slice(2).toLowerCase();
+// Encode uint as 32-byte ABI param
+const encU = n => BigInt(n).toString(16).padStart(64, '0');
+
+// Decode uint256 at slot N (0-indexed, each slot = 32 bytes)
+function dU(hex, slot) {
+  const h = hex.replace(/^0x/, '');
+  return BigInt('0x' + h.slice(slot * 64, slot * 64 + 64));
+}
+// Decode signed int256 at slot N (handles negative ticks)
+function dI(hex, slot) {
+  const raw = dU(hex, slot);
+  return raw >= 2n ** 255n ? raw - 2n ** 256n : raw;
+}
+// Decode address at slot N (last 20 bytes of 32-byte slot)
+function dAddr(hex, slot) {
+  const h = hex.replace(/^0x/, '');
+  return '0x' + h.slice(slot * 64 + 24, slot * 64 + 64);
+}
+// Decode ABI-encoded string (dynamic) or bytes32 (fixed, older tokens like MKR/DAI)
+function dSym(hex) {
+  if (!hex || hex === '0x' || hex.length < 66) return '?';
+  const h = hex.replace(/^0x/, '');
+  const firstWord = BigInt('0x' + h.slice(0, 64));
+  // Dynamic string: first word is offset (0x20 for single-arg return)
+  if (firstWord === 0x20n && h.length >= 192) {
+    try {
+      const len = Number(BigInt('0x' + h.slice(64, 128)));
+      if (len > 0 && len <= 50) {
+        const bh = h.slice(128, 128 + len * 2);
+        const b  = new Uint8Array(bh.match(/.{2}/g).map(x => parseInt(x, 16)));
+        return new TextDecoder().decode(b);
+      }
+    } catch(_) {}
+  }
+  // bytes32: null-terminated ASCII (WBTC, MKR, etc.)
+  const bytes = [];
+  for (let i = 0; i < 64; i += 2) {
+    const b = parseInt(h.slice(i, i + 2), 16);
+    if (b === 0) break;
+    bytes.push(b);
+  }
+  return bytes.length ? String.fromCharCode(...bytes) : '?';
+}
+
+/* ──────────────────────────────────────────────────────
+   Function selectors (keccak256 of signature, 4 bytes)
+────────────────────────────────────────────────────── */
+const SEL = {
+  balanceOf:           '0x70a08231', // balanceOf(address)
+  tokenOfOwnerByIndex: '0x2f745c59', // tokenOfOwnerByIndex(address,uint256)
+  positions:           '0x99fbab88', // positions(uint256)
+  getPool:             '0x1698ee82', // getPool(address,address,uint24)
+  slot0:               '0x3850c7bd', // slot0()
+  symbol:              '0x95d89b41', // symbol()
+  decimals:            '0x313ce567', // decimals()
+};
+
+/* ──────────────────────────────────────────────────────
+   JSON-RPC helpers
+────────────────────────────────────────────────────── */
+async function rpcCall(url, to, data) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0', id: 1,
+      method: 'eth_call',
+      params: [{ to, data }, 'latest'],
+    }),
+    signal: AbortSignal.timeout(12000),
+  });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
+}
+
+// JSON-RPC batch (most public nodes support it)
+async function rpcBatch(url, calls, chunkSize = 80) {
+  if (!calls.length) return [];
+  const out = [];
+  for (let i = 0; i < calls.length; i += chunkSize) {
+    const chunk = calls.slice(i, i + chunkSize);
+    const batch = chunk.map((c, j) => ({
+      jsonrpc: '2.0', id: j,
+      method: 'eth_call',
+      params: [{ to: c.to, data: c.data }, 'latest'],
+    }));
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batch),
+      signal: AbortSignal.timeout(15000),
+    });
+    const arr = await r.json();
+    if (Array.isArray(arr)) {
+      const tmp = new Array(chunk.length).fill(null);
+      for (const item of arr) {
+        if (typeof item.id === 'number') tmp[item.id] = item.result || null;
+      }
+      out.push(...tmp);
+    } else {
+      // Node doesn't support batch - fall back to sequential
+      for (const c of chunk) {
+        try { out.push(await rpcCall(url, c.to, c.data)); }
+        catch(_) { out.push(null); }
+      }
     }
   }
-}`;
+  return out;
+}
+
+async function withFallback(urls, fn) {
+  let lastErr;
+  for (const url of urls) {
+    try { return await fn(url); }
+    catch(e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All RPC endpoints failed');
+}
 
 /* ──────────────────────────────────────────────────────
    Math helpers
@@ -523,29 +646,127 @@ function displayCfg(pos) {
 }
 
 /* ──────────────────────────────────────────────────────
-   Fetch
+   On-chain fetch via public RPC (no API keys)
 ────────────────────────────────────────────────────── */
-function getUrl(chainId) {
-  const key   = document.getElementById('apiKey').value.trim();
-  const chain = CHAINS[chainId];
-  if (key && chain.subgraphId) {
-    return `https://gateway.thegraph.com/api/${key}/subgraphs/id/${chain.subgraphId}`;
-  }
-  return chain.hosted;
-}
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000';
 
-async function fetchPositions(addr, chainId) {
-  const url = getUrl(chainId);
-  const r   = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: GQL, variables: { owner: addr.toLowerCase() } }),
+async function fetchPositions(wallet, chainId) {
+  const chain = CHAINS[chainId];
+  if (!chain) throw new Error('Chain not supported');
+
+  const customRpc = document.getElementById('customRpc')?.value.trim();
+  const rpcList   = customRpc ? [customRpc, ...chain.rpc] : chain.rpc;
+
+  return withFallback(rpcList, async (rpc) => {
+    // 1. How many LP NFTs does this wallet hold?
+    const balHex = await rpcCall(rpc, chain.pm, SEL.balanceOf + encA(wallet));
+    const bal = Number(dU(balHex, 0));
+    if (bal === 0) return [];
+
+    // 2. Get all token IDs
+    const idxCalls = Array.from({ length: bal }, (_, i) => ({
+      to:   chain.pm,
+      data: SEL.tokenOfOwnerByIndex + encA(wallet) + encU(i),
+    }));
+    const idxRes  = await rpcBatch(rpc, idxCalls);
+    const tokenIds = idxRes.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean);
+
+    // 3. Get position data for each token ID
+    // positions(uint256) returns: nonce[0], operator[1], token0[2], token1[3],
+    //   fee[4], tickLower[5], tickUpper[6], liquidity[7], ...
+    const posCalls  = tokenIds.map(id => ({ to: chain.pm, data: SEL.positions + encU(id) }));
+    const posRes    = await rpcBatch(rpc, posCalls);
+
+    const raw = posRes.map((r, i) => {
+      if (!r || r.length < 2 + 12 * 64) return null;
+      const liq = dU(r, 7);
+      if (liq === 0n) return null;
+      return {
+        id:        tokenIds[i].toString(),
+        token0:    dAddr(r, 2),
+        token1:    dAddr(r, 3),
+        fee:       Number(dU(r, 4)),
+        tickLower: Number(dI(r, 5)),
+        tickUpper: Number(dI(r, 6)),
+        liquidity: liq,
+      };
+    }).filter(Boolean);
+
+    if (!raw.length) return [];
+
+    // 4. Get pool addresses from factory: getPool(token0, token1, fee)
+    const uniqueKeys = [...new Map(raw.map(p =>
+      [`${p.token0}:${p.token1}:${p.fee}`, p]
+    )).values()];
+
+    const poolCalls = uniqueKeys.map(p => ({
+      to:   chain.factory,
+      data: SEL.getPool + encA(p.token0) + encA(p.token1) + encU(p.fee),
+    }));
+    const poolRes = await rpcBatch(rpc, poolCalls);
+
+    const poolMap = {};
+    uniqueKeys.forEach((p, i) => {
+      if (poolRes[i] && poolRes[i] !== '0x') {
+        const addr = dAddr(poolRes[i], 0);
+        if (addr !== ZERO_ADDR) poolMap[`${p.token0}:${p.token1}:${p.fee}`] = addr;
+      }
+    });
+
+    // 5. slot0() on each unique pool → current sqrtPriceX96 and tick
+    const uniquePools = [...new Set(Object.values(poolMap))];
+    const s0Calls     = uniquePools.map(addr => ({ to: addr, data: SEL.slot0 }));
+    const s0Res       = await rpcBatch(rpc, s0Calls);
+
+    const slot0Map = {};
+    uniquePools.forEach((addr, i) => {
+      if (s0Res[i] && s0Res[i].length >= 2 + 64) {
+        slot0Map[addr] = {
+          sqrtPriceX96: dU(s0Res[i], 0),
+          tick:         Number(dI(s0Res[i], 1)),
+        };
+      }
+    });
+
+    // 6. symbol() + decimals() for each unique token
+    const uniqueTokens = [...new Set([...raw.map(p => p.token0), ...raw.map(p => p.token1)])];
+    const tokCalls = uniqueTokens.flatMap(addr => [
+      { to: addr, data: SEL.symbol },
+      { to: addr, data: SEL.decimals },
+    ]);
+    const tokRes = await rpcBatch(rpc, tokCalls);
+
+    const tokenMap = {};
+    uniqueTokens.forEach((addr, i) => {
+      tokenMap[addr] = {
+        symbol:   dSym(tokRes[i * 2]),
+        decimals: tokRes[i * 2 + 1] ? String(Number(dU(tokRes[i * 2 + 1], 0))) : '18',
+      };
+    });
+
+    // 7. Assemble into the same shape as the old GraphQL response
+    return raw.map(p => {
+      const key    = `${p.token0}:${p.token1}:${p.fee}`;
+      const pAddr  = poolMap[key] || ZERO_ADDR;
+      const s0     = slot0Map[pAddr] || { tick: 0, sqrtPriceX96: 0n };
+      const t0     = tokenMap[p.token0] || { symbol: '?', decimals: '18' };
+      const t1     = tokenMap[p.token1] || { symbol: '?', decimals: '18' };
+      return {
+        id:       p.id,
+        tickLower: { tickIdx: String(p.tickLower) },
+        tickUpper: { tickIdx: String(p.tickUpper) },
+        liquidity: p.liquidity.toString(),
+        pool: {
+          id:       pAddr,
+          sqrtPrice: s0.sqrtPriceX96.toString(),
+          tick:     String(s0.tick),
+          feeTier:  String(p.fee),
+          token0:   { symbol: t0.symbol, decimals: t0.decimals },
+          token1:   { symbol: t1.symbol, decimals: t1.decimals },
+        },
+      };
+    });
   });
-  if (!r.ok) throw new Error(`HTTP ${r.status} from subgraph`);
-  const j = await r.json();
-  if (j.errors?.length) throw new Error(j.errors[0].message);
-  if (!j.data)          throw new Error('No data returned - subgraph may be deprecated. Try adding a Graph API key.');
-  return j.data.positions;
 }
 
 /* ──────────────────────────────────────────────────────
