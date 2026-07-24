@@ -296,6 +296,25 @@ function fmt(p) {
   return p.toExponential(3);
 }
 function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+function fmtUsd(v) {
+  if (!isFinite(v) || v <= 0) return '-';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(1) + 'k';
+  return '$' + v.toFixed(0);
+}
+
+// Uniswap v3 token amounts from liquidity + ticks
+function calcAmounts(liquidity, tL, tU, tC, dd0, dd1) {
+  const L  = Number(liquidity);
+  const sP = Math.pow(1.0001, tC / 2);
+  const sA = Math.pow(1.0001, tL / 2);
+  const sB = Math.pow(1.0001, tU / 2);
+  let a0, a1;
+  if (tC <= tL)       { a0 = L * (sB - sA) / (sA * sB); a1 = 0; }
+  else if (tC >= tU)  { a0 = 0; a1 = L * (sB - sA); }
+  else                { a0 = L * (sB - sP) / (sP * sB); a1 = L * (sP - sA); }
+  return { amt0: a0 / Math.pow(10, dd0), amt1: a1 / Math.pow(10, dd1) };
+}
 
 async function fetchPositions(wallet) {
   const balHex = await (await fetch(CHAIN.rpc, {
@@ -359,7 +378,8 @@ async function fetchPositions(wallet) {
     const unit = flip ? t0.symbol : t1.symbol;
     const base = flip ? t1.symbol : t0.symbol;
     const inR  = tC >= tL && tC <= tU;
-    return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id };
+    return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id,
+             liquidity: p.liquidity, tL, tU, tC, dd0, dd1 };
   });
 }
 
@@ -418,15 +438,19 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
     const inR    = pos.inR;
     const dLow   = (pCur - pos.pLow) / pCur * 100;
     const dHi    = (pos.pHi - pCur)  / pCur * 100;
+    const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
+    const usd    = amt0 * pCur + amt1;
     const distTxt = inR
       ? `<span style="color:#3a6040">${fmtPct(dLow)}</span> <span style="color:var(--dim)">·</span> <span style="color:#3a6040">${fmtPct(dHi)}</span>`
       : pCur < pos.pLow
         ? `<span style="color:#6b2e2e">${fmtPct(dLow)} below</span>`
         : `<span style="color:#6b2e2e">${fmtPct(dHi)} above</span>`;
     rows += `<tr>
+      <td style="color:var(--dim);font-size:10px">#${pos.id}</td>
       <td><span class="dot ${inR?'in':'out'}"></span>${fmt(pos.pLow)}</td>
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
+      <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
       <td class="dist">${distTxt}</td>
     </tr>`;
   });
@@ -449,7 +473,7 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
 </div>
 <table class="tbl">
   <thead><tr>
-    <th>Lower</th><th>Upper</th><th>Width</th><th>Distance</th>
+    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>Distance</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>`;
