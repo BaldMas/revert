@@ -210,12 +210,14 @@ body {
   flex-shrink: 0;
 }
 .sbar-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 2px;
-  padding: 0 12px;
-  min-width: 60px;
+  padding: 0 8px;
+  min-width: 58px;
+  max-width: 110px;
 }
 .sbar-item:first-child { padding-left: 0; }
 .sbar-lbl { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .5px; }
@@ -344,6 +346,10 @@ function fmtUsd(v) {
   if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
   if (v >= 1e3) return '$' + (v/1e3).toFixed(1) + 'k';
   return '$' + v.toFixed(0);
+}
+function fmtBal(v) {
+  if (!isFinite(v) || v <= 0) return '-';
+  return Math.round(v).toLocaleString('en');
 }
 
 // Assign horizontal lanes to non-overlapping groups so all bars are visible
@@ -483,14 +489,14 @@ function renderWalletBar(snaps, w1b, w2b) {
   ];
 
   function mkHalf(label, current, field) {
-    const nowHtml = `<div class="sbar-item"><span class="sbar-lbl">${label}</span><span class="sbar-val" style="color:var(--blue-t)">${fmtUsd(current)}</span></div>`;
+    const nowHtml = `<div class="sbar-item"><span class="sbar-lbl">${label}</span><span class="sbar-val" style="color:var(--blue-t)">${fmtBal(current)}</span></div>`;
     const hist = periods.map(({ lbl, snap }) => {
       const v = snap?.[field];
       if (v == null) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
       const isSame = cur && snap.ts === cur.ts;
       const pct = (!isSame && v) ? (current - v) / v * 100 : null;
       const dHtml = pct != null ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>` : '';
-      return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtUsd(v)}</span>${dHtml}</div>`;
+      return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtBal(v)}</span>${dHtml}</div>`;
     }).join('');
     return `<div class="sbar-half">${nowHtml}<div class="sbar-divv"></div>${hist}</div>`;
   }
