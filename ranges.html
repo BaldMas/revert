@@ -443,56 +443,28 @@ async function fetchPositions(wallet) {
     const baseDec  = flip ? d1 : d0;
     const unitDec  = flip ? d0 : d1;
     return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id,
-             liquidity: p.liquidity, tL, tU, tC, dd0, dd1,
-             baseAddr, unitAddr, baseDec, unitDec };
+             liquidity: p.liquidity, tL, tU, tC, dd0, dd1 };
   });
 }
 
-/* ── Wallet balance ── */
-const WETH_ADDR = '0x4200000000000000000000000000000000000006';
+/* ── Wallet balance (Ankr multichain) ── */
+const ANKR_CHAINS = ['eth', 'base', 'arbitrum', 'optimism', 'polygon', 'bsc', 'avalanche'];
 
-async function rpcCall(method, params) {
+async function fetchWalletBalance(addr) {
   try {
-    const r = await fetch(CHAIN.rpc, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc:'2.0',id:1,method,params}),
-      signal: AbortSignal.timeout(10000),
+    const r = await fetch('https://rpc.ankr.com/multichain', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1,
+        method: 'ankr_getAccountBalance',
+        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: false },
+      }),
+      signal: AbortSignal.timeout(20000),
     });
-    return (await r.json()).result;
-  } catch { return null; }
-}
-
-function buildPriceMap(positions) {
-  const map = {};
-  for (const pos of positions) {
-    if (!pos.baseAddr || !STABLES.has(pos.unit)) continue;
-    if (!map[pos.baseAddr] || pos.pCur > 0)
-      map[pos.baseAddr] = { price: pos.pCur, decimals: pos.baseDec };
-    if (!map[pos.unitAddr])
-      map[pos.unitAddr] = { price: 1, decimals: pos.unitDec };
-  }
-  return map;
-}
-
-async function fetchWalletBalance(addr, priceMap) {
-  const tokenAddrs = Object.keys(priceMap);
-  if (!tokenAddrs.length) return 0;
-
-  const [ethHex, balRes] = await Promise.all([
-    rpcCall('eth_getBalance', [addr, 'latest']),
-    rpcBatch(tokenAddrs.map(a => ({to: a, data: SEL.balanceOf + encA(addr)}))),
-  ]).catch(() => [null, []]);
-
-  const ethBal = ethHex ? Number(BigInt(ethHex)) / 1e18 : 0;
-  const ethPrice = (priceMap[WETH_ADDR] || {}).price || 0;
-  let total = ethBal * ethPrice;
-
-  tokenAddrs.forEach((a, i) => {
-    const info = priceMap[a];
-    if (!info || !balRes[i] || balRes[i] === '0x') return;
-    try { total += (Number(dU(balRes[i], 0)) / Math.pow(10, info.decimals)) * info.price; } catch {}
-  });
-  return total;
+    const j = await r.json();
+    return j.result?.totalBalanceUsd ? parseFloat(j.result.totalBalanceUsd) : 0;
+  } catch { return 0; }
 }
 
 function renderWalletBar(snaps, w1b, w2b) {
@@ -737,10 +709,9 @@ async function main() {
   const w1usd = pos1.ok ? calcTotalUsd(pos1.pos) : 0;
   const w2usd = pos2.ok ? calcTotalUsd(pos2.pos) : 0;
 
-  const priceMap = buildPriceMap(all);
   const [w1bal, w2bal] = await Promise.all([
-    fetchWalletBalance(WALLETS[0].addr, priceMap).catch(() => 0),
-    fetchWalletBalance(WALLETS[1].addr, priceMap).catch(() => 0),
+    fetchWalletBalance(WALLETS[0].addr),
+    fetchWalletBalance(WALLETS[1].addr),
   ]);
 
   const snaps = saveSnap(loadSnaps(), { w1: w1usd, w2: w2usd, total: w1usd + w2usd, w1b: w1bal, w2b: w2bal });
