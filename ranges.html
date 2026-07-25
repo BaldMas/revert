@@ -445,6 +445,28 @@ function loadSnaps() {
   try { return JSON.parse(localStorage.getItem(SNAP_KEY) || '[]'); } catch { return []; }
 }
 
+function pruneSnaps(snaps) {
+  if (snaps.length <= 100) return snaps;
+  const D = 864e5;
+  const keep = new Set([0, snaps.length - 1]); // always keep initial and current
+
+  // Keep all entries from last 24h (full resolution)
+  snaps.forEach((s, i) => { if (TS_NOW - s.ts <= D) keep.add(i); });
+
+  // Generate target timestamps: 1 per day for last 30d, 1 per week for last 3y
+  const targets = [];
+  for (let i = 1; i <= 30; i++)  targets.push(TS_NOW - i * D);
+  for (let i = 5; i <= 156; i++) targets.push(TS_NOW - i * 7 * D);
+
+  for (const t of targets) {
+    let bi = -1, bd = Infinity;
+    snaps.forEach((s, i) => { const d = Math.abs(s.ts - t); if (d < bd) { bd = d; bi = i; } });
+    if (bi >= 0) keep.add(bi);
+  }
+
+  return snaps.filter((_, i) => keep.has(i));
+}
+
 function saveSnap(snaps, vals) {
   if (!vals.total) return snaps;
   const last = snaps[snaps.length - 1];
@@ -453,8 +475,7 @@ function saveSnap(snaps, vals) {
     try { localStorage.setItem(SNAP_KEY, JSON.stringify(next)); } catch {}
     return next;
   }
-  const next = [...snaps, { ts: TS_NOW, ...vals }];
-  if (next.length > 2000) next.splice(0, next.length - 2000);
+  const next = pruneSnaps([...snaps, { ts: TS_NOW, ...vals }]);
   try { localStorage.setItem(SNAP_KEY, JSON.stringify(next)); } catch {}
   return next;
 }
