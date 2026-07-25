@@ -453,29 +453,21 @@ async function fetchPositions(wallet) {
   });
 }
 
-/* ── Wallet balance (Ankr multichain) ── */
-const ANKR_KEY    = '';  // вставь ключ с https://www.ankr.com/rpc/ (бесплатно)
-const ANKR_URL    = 'https://rpc.ankr.com/multichain' + (ANKR_KEY ? '/' + ANKR_KEY : '');
-const ANKR_CHAINS = ['eth', 'base', 'arbitrum', 'optimism', 'polygon', 'bsc', 'avalanche'];
+/* ── Wallet balance (Zerion multichain) ── */
+const ZERION_KEY = 'zk_abd2a835daa74a4cb9b8b3b644aeff94';
 
 async function fetchWalletBalance(addr) {
   try {
-    const r = await fetch(ANKR_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        jsonrpc: '2.0', id: 1,
-        method: 'ankr_getAccountBalance',
-        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: false },
-      }),
+    const auth = btoa(ZERION_KEY + ':');
+    const r = await fetch(`https://api.zerion.io/v1/wallets/${addr}/portfolio?currency=usd`, {
+      headers: { 'Authorization': 'Basic ' + auth },
       signal: AbortSignal.timeout(20000),
     });
     const j = await r.json();
-    if (j.error) { console.warn('Ankr error', addr, j.error); return 0; }
-    const total = j.result?.totalBalanceUsd;
-    if (!total) { console.warn('Ankr no result', addr, j); return 0; }
+    const total = j?.data?.attributes?.total?.positions;
+    if (total == null) { console.warn('Zerion no result', addr, j); return 0; }
     return parseFloat(total);
-  } catch (e) { console.warn('Ankr fetch failed', addr, e); return 0; }
+  } catch (e) { console.warn('Zerion fetch failed', addr, e); return 0; }
 }
 
 function renderWalletBar(snaps, w1b, w2b) {
