@@ -581,7 +581,7 @@ function renderStateBar(snaps, w1, w2) {
   ];
 
   function mkHalf(label, current, field) {
-    const nowHtml = `<div class="sbar-item"><span class="sbar-lbl">${label}</span><span class="sbar-val" style="color:var(--orange)">${fmtUsd(current)}</span></div>`;
+    const nowHtml = `<div class="sbar-item"><span class="sbar-lbl">${label}</span><span class="sbar-val" style="color:var(--orange)">${fmtBal(current)}</span></div>`;
     const hist = periods.map(({ lbl, snap }) => {
       if (!snap) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
       const v = snap[field];
@@ -590,7 +590,7 @@ function renderStateBar(snaps, w1, w2) {
       const dHtml = pct !== null
         ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`
         : '';
-      return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtUsd(v)}</span>${dHtml}</div>`;
+      return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtBal(v)}</span>${dHtml}</div>`;
     }).join('');
     return `<div class="sbar-half">${nowHtml}<div class="sbar-divv"></div>${hist}</div>`;
   }
