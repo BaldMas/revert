@@ -187,22 +187,27 @@ body {
 .sbar {
   display: flex;
   align-items: stretch;
-  padding: 0 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--border);
   font-size: 11px;
-  overflow-x: auto;
-  min-height: 48px;
 }
-.sbar-grp {
+.sbar-half {
+  flex: 1;
   display: flex;
   align-items: center;
-  padding: 8px 0;
+  padding: 8px 16px;
+  background: var(--surface);
+  overflow-x: auto;
+  gap: 0;
+  min-height: 48px;
 }
-.sbar-grp + .sbar-grp {
-  margin-left: 20px;
-  padding-left: 20px;
-  border-left: 1px solid var(--border);
+.sbar-mid { width: 2px; flex-shrink: 0; }
+.sbar-divv {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 .sbar-item {
   display: flex;
@@ -210,7 +215,7 @@ body {
   justify-content: center;
   gap: 2px;
   padding: 0 12px;
-  min-width: 64px;
+  min-width: 60px;
 }
 .sbar-item:first-child { padding-left: 0; }
 .sbar-lbl { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .5px; }
@@ -496,36 +501,34 @@ function calcTotalUsd(positions) {
 function renderStateBar(snaps, w1, w2) {
   const el = document.getElementById('sbar');
   if (!el) return;
-  const total = w1 + w2;
   const cur = snaps[snaps.length - 1];
   const prev = snaps.slice(0, -1);
   const D = 864e5, W = 7 * D, M = 30 * D, Y = 365 * D;
+
   const periods = [
-    { lbl: 'Initial', snap: snaps[0] || null },   // always first snapshot (= current on first load)
-    { lbl: '1Y ago',  snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
-    { lbl: '1M ago',  snap: closestSnap(prev, TS_NOW - M, 10 * D) },
-    { lbl: '1W ago',  snap: closestSnap(prev, TS_NOW - W, 2 * D) },
-    { lbl: '1D ago',  snap: closestSnap(prev, TS_NOW - D, 12 * 36e5) },
+    { lbl: 'Initial', snap: snaps[0] || null },
+    { lbl: '1Y',     snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
+    { lbl: '1M',     snap: closestSnap(prev, TS_NOW - M, 10 * D) },
+    { lbl: '1W',     snap: closestSnap(prev, TS_NOW - W, 2 * D) },
+    { lbl: '1D',     snap: closestSnap(prev, TS_NOW - D, 12 * 36e5) },
   ];
 
-  const histHtml = periods.map(({ lbl, snap }) => {
-    if (!snap) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
-    const v = snap.total;
-    const isSameasCur = cur && snap.ts === cur.ts;
-    const pct = (!isSameasCur && v) ? (total - v) / v * 100 : null;
-    const dHtml = pct !== null
-      ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`
-      : '';
-    return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtUsd(v)}</span>${dHtml}</div>`;
-  }).join('');
+  function mkHalf(label, current, field) {
+    const nowHtml = `<div class="sbar-item"><span class="sbar-lbl">${label}</span><span class="sbar-val" style="color:var(--orange)">${fmtUsd(current)}</span></div>`;
+    const hist = periods.map(({ lbl, snap }) => {
+      if (!snap) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
+      const v = snap[field];
+      const isSame = cur && snap.ts === cur.ts;
+      const pct = (!isSame && v) ? (current - v) / v * 100 : null;
+      const dHtml = pct !== null
+        ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`
+        : '';
+      return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtUsd(v)}</span>${dHtml}</div>`;
+    }).join('');
+    return `<div class="sbar-half">${nowHtml}<div class="sbar-divv"></div>${hist}</div>`;
+  }
 
-  el.innerHTML = `
-    <div class="sbar-grp">
-      <div class="sbar-item"><span class="sbar-lbl">W1</span><span class="sbar-val">${fmtUsd(w1)}</span></div>
-      <div class="sbar-item"><span class="sbar-lbl">W2</span><span class="sbar-val">${fmtUsd(w2)}</span></div>
-      <div class="sbar-item"><span class="sbar-lbl">Total</span><span class="sbar-val" style="color:var(--orange)">${fmtUsd(total)}</span></div>
-    </div>
-    <div class="sbar-grp">${histHtml}</div>`;
+  el.innerHTML = mkHalf('W1', w1, 'w1') + '<div class="sbar-mid"></div>' + mkHalf('W2', w2, 'w2');
 }
 
 /* ── Render column ── */
