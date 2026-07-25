@@ -454,23 +454,28 @@ async function fetchPositions(wallet) {
 }
 
 /* ── Wallet balance (Ankr multichain) ── */
+const ANKR_KEY    = '';  // вставь ключ с https://www.ankr.com/rpc/ (бесплатно)
+const ANKR_URL    = 'https://rpc.ankr.com/multichain' + (ANKR_KEY ? '/' + ANKR_KEY : '');
 const ANKR_CHAINS = ['eth', 'base', 'arbitrum', 'optimism', 'polygon', 'bsc', 'avalanche'];
 
 async function fetchWalletBalance(addr) {
   try {
-    const r = await fetch('https://rpc.ankr.com/multichain', {
+    const r = await fetch(ANKR_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         jsonrpc: '2.0', id: 1,
         method: 'ankr_getAccountBalance',
-        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: false },
+        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: true },
       }),
       signal: AbortSignal.timeout(20000),
     });
     const j = await r.json();
-    return j.result?.totalBalanceUsd ? parseFloat(j.result.totalBalanceUsd) : 0;
-  } catch { return 0; }
+    if (j.error) { console.warn('Ankr error', addr, j.error); return 0; }
+    const total = j.result?.totalBalanceUsd;
+    if (!total) { console.warn('Ankr no result', addr, j); return 0; }
+    return parseFloat(total);
+  } catch (e) { console.warn('Ankr fetch failed', addr, e); return 0; }
 }
 
 function renderWalletBar(snaps, w1b, w2b) {
