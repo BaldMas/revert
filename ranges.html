@@ -717,9 +717,11 @@ async function main() {
     fetchWalletBalance(WALLETS[1].addr),
   ]);
 
-  const snaps = saveSnap(loadSnaps(), { w1: w1usd, w2: w2usd, total: w1usd + w2usd, w1b: w1bal, w2b: w2bal });
+  const w1total = w1bal + w1usd;
+  const w2total = w2bal + w2usd;
+  const snaps = saveSnap(loadSnaps(), { w1: w1usd, w2: w2usd, total: w1usd + w2usd, w1b: w1total, w2b: w2total });
   renderStateBar(snaps, w1usd, w2usd);
-  renderWalletBar(snaps, w1bal, w2bal);
+  renderWalletBar(snaps, w1total, w2total);
 
   document.getElementById('ts').textContent = 'Base · Updated ' + new Date().toLocaleTimeString();
 }
