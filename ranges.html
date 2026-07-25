@@ -497,10 +497,11 @@ function renderStateBar(snaps, w1, w2) {
   const el = document.getElementById('sbar');
   if (!el) return;
   const total = w1 + w2;
+  const cur = snaps[snaps.length - 1];
   const prev = snaps.slice(0, -1);
   const D = 864e5, W = 7 * D, M = 30 * D, Y = 365 * D;
   const periods = [
-    { lbl: 'Initial', snap: prev[0] || null, noMaxDiff: true },
+    { lbl: 'Initial', snap: snaps[0] || null },   // always first snapshot (= current on first load)
     { lbl: '1Y ago',  snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
     { lbl: '1M ago',  snap: closestSnap(prev, TS_NOW - M, 10 * D) },
     { lbl: '1W ago',  snap: closestSnap(prev, TS_NOW - W, 2 * D) },
@@ -510,7 +511,8 @@ function renderStateBar(snaps, w1, w2) {
   const histHtml = periods.map(({ lbl, snap }) => {
     if (!snap) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
     const v = snap.total;
-    const pct = v ? (total - v) / v * 100 : null;
+    const isSameasCur = cur && snap.ts === cur.ts;
+    const pct = (!isSameasCur && v) ? (total - v) / v * 100 : null;
     const dHtml = pct !== null
       ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`
       : '';
