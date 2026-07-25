@@ -667,8 +667,8 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
         ? `<span style="color:#6b2e2e">${fmtPct(dLow)} below</span>`
         : `<span style="color:#6b2e2e">${fmtPct(dHi)} above</span>`;
     rows += `<tr>
-      <td style="color:var(--dim);font-size:10px">#${pos.id}</td>
-      <td><span class="dot ${inR?'in':'out'}"></span>${fmt(pos.pLow)}</td>
+      <td style="color:${inR?'var(--green-t)':'var(--red-t)'};font-size:10px">#${pos.id}</td>
+      <td>${fmt(pos.pLow)}</td>
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
       <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
