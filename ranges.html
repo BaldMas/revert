@@ -466,7 +466,7 @@ async function fetchWalletBalance(addr) {
       body: JSON.stringify({
         jsonrpc: '2.0', id: 1,
         method: 'ankr_getAccountBalance',
-        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: true },
+        params: { walletAddress: addr, blockchain: ANKR_CHAINS, onlyWhitelisted: false },
       }),
       signal: AbortSignal.timeout(20000),
     });
@@ -486,11 +486,11 @@ function renderWalletBar(snaps, w1b, w2b) {
   const D = 864e5, W = 7 * D, M = 30 * D, Y = 365 * D;
 
   const periods = [
-    { lbl: 'Initial', snap: snaps[0] || null },
-    { lbl: '1Y',     snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
-    { lbl: '1M',     snap: closestSnap(prev, TS_NOW - M, 10 * D) },
-    { lbl: '1W',     snap: closestSnap(prev, TS_NOW - W, 2 * D) },
     { lbl: '1D',     snap: closestSnap(prev, TS_NOW - D, 12 * 36e5) },
+    { lbl: '1W',     snap: closestSnap(prev, TS_NOW - W, 2 * D) },
+    { lbl: '1M',     snap: closestSnap(prev, TS_NOW - M, 10 * D) },
+    { lbl: '1Y',     snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
+    { lbl: 'Initial', snap: snaps[0] || null },
   ];
 
   function mkHalf(label, current, field) {
@@ -573,11 +573,11 @@ function renderStateBar(snaps, w1, w2) {
   const D = 864e5, W = 7 * D, M = 30 * D, Y = 365 * D;
 
   const periods = [
-    { lbl: 'Initial', snap: snaps[0] || null },
-    { lbl: '1Y',     snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
-    { lbl: '1M',     snap: closestSnap(prev, TS_NOW - M, 10 * D) },
-    { lbl: '1W',     snap: closestSnap(prev, TS_NOW - W, 2 * D) },
     { lbl: '1D',     snap: closestSnap(prev, TS_NOW - D, 12 * 36e5) },
+    { lbl: '1W',     snap: closestSnap(prev, TS_NOW - W, 2 * D) },
+    { lbl: '1M',     snap: closestSnap(prev, TS_NOW - M, 10 * D) },
+    { lbl: '1Y',     snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
+    { lbl: 'Initial', snap: snaps[0] || null },
   ];
 
   function mkHalf(label, current, field) {
