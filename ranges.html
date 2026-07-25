@@ -182,6 +182,42 @@ body {
   border-radius: 50%; animation: spin .8s linear infinite;
   vertical-align: middle; margin-right: 6px;
 }
+
+/* ── State bar ── */
+.sbar {
+  display: flex;
+  align-items: stretch;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 11px;
+  overflow-x: auto;
+  min-height: 48px;
+}
+.sbar-grp {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+.sbar-grp + .sbar-grp {
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid var(--border);
+}
+.sbar-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 12px;
+  min-width: 64px;
+}
+.sbar-item:first-child { padding-left: 0; }
+.sbar-lbl { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: .5px; }
+.sbar-val { font-size: 12px; font-weight: 600; color: var(--text); }
+.sbar-delta { font-size: 10px; }
+.pos { color: var(--green-t); }
+.neg { color: var(--red-t); }
 </style>
 </head>
 <body>
@@ -195,6 +231,8 @@ body {
   <a href="https://revert.finance/#/account/0x2534acb6365e902c986a7aAaB3e9761f92D97693?filter-network=base"
      target="_blank" rel="noopener">W2 revert ↗</a>
 </div>
+
+<div class="sbar" id="sbar"></div>
 
 <div class="main">
   <div class="col" id="col1">
@@ -399,6 +437,74 @@ async function fetchPositions(wallet) {
   });
 }
 
+/* ── Snapshot / wallet state ── */
+const SNAP_KEY = 'lp_snaps_v1';
+const TS_NOW = Date.now();
+
+function loadSnaps() {
+  try { return JSON.parse(localStorage.getItem(SNAP_KEY) || '[]'); } catch { return []; }
+}
+
+function saveSnap(snaps, vals) {
+  if (!vals.total) return snaps;
+  const last = snaps[snaps.length - 1];
+  if (last && TS_NOW - last.ts < 30 * 60 * 1000) {
+    const next = [...snaps.slice(0, -1), { ts: last.ts, ...vals }];
+    try { localStorage.setItem(SNAP_KEY, JSON.stringify(next)); } catch {}
+    return next;
+  }
+  const next = [...snaps, { ts: TS_NOW, ...vals }];
+  if (next.length > 2000) next.splice(0, next.length - 2000);
+  try { localStorage.setItem(SNAP_KEY, JSON.stringify(next)); } catch {}
+  return next;
+}
+
+function closestSnap(snaps, targetTs, maxDiff) {
+  if (!snaps.length) return null;
+  const best = snaps.reduce((b, s) => Math.abs(s.ts - targetTs) < Math.abs(b.ts - targetTs) ? s : b);
+  return Math.abs(best.ts - targetTs) <= maxDiff ? best : null;
+}
+
+function calcTotalUsd(positions) {
+  return positions.reduce((sum, pos) => {
+    const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
+    return sum + amt0 * pos.pCur + amt1;
+  }, 0);
+}
+
+function renderStateBar(snaps, w1, w2) {
+  const el = document.getElementById('sbar');
+  if (!el) return;
+  const total = w1 + w2;
+  const prev = snaps.slice(0, -1);
+  const D = 864e5, W = 7 * D, M = 30 * D, Y = 365 * D;
+  const periods = [
+    { lbl: 'Initial', snap: prev[0] || null, noMaxDiff: true },
+    { lbl: '1Y ago',  snap: closestSnap(prev, TS_NOW - Y, 45 * D) },
+    { lbl: '1M ago',  snap: closestSnap(prev, TS_NOW - M, 10 * D) },
+    { lbl: '1W ago',  snap: closestSnap(prev, TS_NOW - W, 2 * D) },
+    { lbl: '1D ago',  snap: closestSnap(prev, TS_NOW - D, 12 * 36e5) },
+  ];
+
+  const histHtml = periods.map(({ lbl, snap }) => {
+    if (!snap) return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val" style="color:var(--dim)">-</span></div>`;
+    const v = snap.total;
+    const pct = v ? (total - v) / v * 100 : null;
+    const dHtml = pct !== null
+      ? `<span class="sbar-delta ${pct >= 0 ? 'pos' : 'neg'}">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span>`
+      : '';
+    return `<div class="sbar-item"><span class="sbar-lbl">${lbl}</span><span class="sbar-val">${fmtUsd(v)}</span>${dHtml}</div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="sbar-grp">
+      <div class="sbar-item"><span class="sbar-lbl">W1</span><span class="sbar-val">${fmtUsd(w1)}</span></div>
+      <div class="sbar-item"><span class="sbar-lbl">W2</span><span class="sbar-val">${fmtUsd(w2)}</span></div>
+      <div class="sbar-item"><span class="sbar-lbl">Total</span><span class="sbar-val" style="color:var(--orange)">${fmtUsd(total)}</span></div>
+    </div>
+    <div class="sbar-grp">${histHtml}</div>`;
+}
+
 /* ── Render column ── */
 function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
   if (err) {
@@ -517,6 +623,11 @@ async function main() {
 
   renderCol(document.getElementById('col1'), 1, WALLETS[0].addr, pos1.pos || [], globalMin, globalMax, pos1.err);
   renderCol(document.getElementById('col2'), 2, WALLETS[1].addr, pos2.pos || [], globalMin, globalMax, pos2.err);
+
+  const w1usd = pos1.ok ? calcTotalUsd(pos1.pos) : 0;
+  const w2usd = pos2.ok ? calcTotalUsd(pos2.pos) : 0;
+  const snaps = saveSnap(loadSnaps(), { w1: w1usd, w2: w2usd, total: w1usd + w2usd });
+  renderStateBar(snaps, w1usd, w2usd);
 
   document.getElementById('ts').textContent = 'Base · Updated ' + new Date().toLocaleTimeString();
 }
