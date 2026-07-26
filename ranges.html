@@ -55,13 +55,13 @@ body {
 
 /* ── Main layout ── */
 .main {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 2px;
   background: var(--border);
   min-height: calc(100vh - 49px);
 }
 .col {
-  flex: 1;
   background: var(--bg);
   padding: 16px;
   min-width: 0;
@@ -461,6 +461,22 @@ async function fetchPositions(wallet) {
   });
 }
 
+/* ── Revert Finance APR ── */
+async function fetchRevertApr(addr) {
+  try {
+    const r = await fetch(`https://api.revert.finance/v1/positions?account=${addr}&network=base`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    const j = await r.json();
+    const map = {};
+    for (const p of j.data || []) {
+      const apr = parseFloat(p?.performance?.hodl?.fee_apr || 0);
+      if (p.nft_id) map[p.nft_id.toString()] = apr;
+    }
+    return map;
+  } catch { return {}; }
+}
+
 /* ── Wallet balance (Ankr multichain) ── */
 const ANKR_URL    = 'https://rpc.ankr.com/multichain/d472220a2a61a865820079c301ed608e389e3e02a51abe4e6e23efa72de2c93b';
 const ANKR_CHAINS = ['eth', 'base', 'arbitrum', 'optimism', 'polygon', 'bsc', 'avalanche'];
@@ -606,7 +622,7 @@ function renderStateBar(snaps, w1, w2) {
 }
 
 /* ── Render column ── */
-function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
+function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {}) {
   if (err) {
     el.innerHTML = `<div class="msg" style="color:#f85149">Error: ${err}</div>`;
     return;
@@ -673,12 +689,15 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
       : pCur < pos.pLow
         ? `<span style="color:#6b2e2e">${fmtPct(dLow)} below</span>`
         : `<span style="color:#6b2e2e">${fmtPct(dHi)} above</span>`;
+    const apr = aprMap[pos.id];
+    const aprTxt = apr > 0 ? `<span style="color:var(--green-t)">${Math.round(apr)}%</span>` : `<span style="color:var(--dim)">-</span>`;
     rows += `<tr>
       <td style="color:${inR?'var(--green-t)':'var(--red-t)'};font-size:10px">#${pos.id}</td>
       <td>${fmt(pos.pLow)}</td>
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
       <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
+      <td style="font-size:10px">${aprTxt}</td>
       <td class="dist">${distTxt}</td>
     </tr>`;
   });
@@ -701,7 +720,7 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
 </div>
 <table class="tbl">
   <thead><tr>
-    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>Distance</th>
+    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>APR</th><th>Distance</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>`;
@@ -709,13 +728,16 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
 
 /* ── Main ── */
 async function main() {
-  const results = await Promise.all(
-    WALLETS.map(w =>
-      fetchPositions(w.addr)
-        .then(p => ({ ok: true, pos: p }))
-        .catch(e => ({ ok: false, err: e.message, pos: [] }))
-    )
-  );
+  const [results, aprMaps] = await Promise.all([
+    Promise.all(
+      WALLETS.map(w =>
+        fetchPositions(w.addr)
+          .then(p => ({ ok: true, pos: p }))
+          .catch(e => ({ ok: false, err: e.message, pos: [] }))
+      )
+    ),
+    Promise.all(WALLETS.map(w => fetchRevertApr(w.addr))),
+  ]);
 
   const all = results.flatMap(r => r.pos || []);
   const globalMin = all.length ? Math.min(...all.map(p => p.pLow)) * 0.97 : 0;
@@ -723,7 +745,7 @@ async function main() {
 
   results.forEach((r, i) => {
     const el = document.getElementById(`col${i + 1}`);
-    if (el) renderCol(el, i + 1, WALLETS[i].addr, r.pos || [], globalMin, globalMax, r.err);
+    if (el) renderCol(el, i + 1, WALLETS[i].addr, r.pos || [], globalMin, globalMax, r.err, aprMaps[i]);
   });
 
   const w1usd = results[0].ok ? calcTotalUsd(results[0].pos) : 0;
