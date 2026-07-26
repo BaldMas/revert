@@ -249,6 +249,12 @@ body {
   <div class="col" id="col2">
     <div class="msg"><span class="spin"></span>Loading wallet 2...</div>
   </div>
+  <div class="col" id="col3">
+    <div class="msg"><span class="spin"></span>Loading wallet 3...</div>
+  </div>
+  <div class="col" id="col4">
+    <div class="msg"><span class="spin"></span>Loading wallet 4...</div>
+  </div>
 </div>
 
 <script>
@@ -256,6 +262,8 @@ body {
 const WALLETS = [
   { n: 1, addr: '0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f' },
   { n: 2, addr: '0x2534acb6365e902c986a7aAaB3e9761f92D97693' },
+  { n: 3, addr: '0x9e309c439c118804d9c2cf5eac4dfc62cc6f95c2' },
+  { n: 4, addr: '0xdd1fbdbbaaed09bcfdfb0b7a7d001ab5791c3511' },
 ];
 const CHAIN = {
   rpc:       'https://base-rpc.publicnode.com',
@@ -701,23 +709,25 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err) {
 
 /* ── Main ── */
 async function main() {
-  const [pos1, pos2] = await Promise.all(
+  const results = await Promise.all(
     WALLETS.map(w =>
       fetchPositions(w.addr)
         .then(p => ({ ok: true, pos: p }))
-        .catch(e => ({ ok: false, err: e.message }))
+        .catch(e => ({ ok: false, err: e.message, pos: [] }))
     )
   );
 
-  const all = [...(pos1.pos || []), ...(pos2.pos || [])];
-  const globalMin = Math.min(...all.map(p => p.pLow)) * 0.97;
-  const globalMax = Math.max(...all.map(p => p.pHi))  * 1.03;
+  const all = results.flatMap(r => r.pos || []);
+  const globalMin = all.length ? Math.min(...all.map(p => p.pLow)) * 0.97 : 0;
+  const globalMax = all.length ? Math.max(...all.map(p => p.pHi))  * 1.03 : 1;
 
-  renderCol(document.getElementById('col1'), 1, WALLETS[0].addr, pos1.pos || [], globalMin, globalMax, pos1.err);
-  renderCol(document.getElementById('col2'), 2, WALLETS[1].addr, pos2.pos || [], globalMin, globalMax, pos2.err);
+  results.forEach((r, i) => {
+    const el = document.getElementById(`col${i + 1}`);
+    if (el) renderCol(el, i + 1, WALLETS[i].addr, r.pos || [], globalMin, globalMax, r.err);
+  });
 
-  const w1usd = pos1.ok ? calcTotalUsd(pos1.pos) : 0;
-  const w2usd = pos2.ok ? calcTotalUsd(pos2.pos) : 0;
+  const w1usd = results[0].ok ? calcTotalUsd(results[0].pos) : 0;
+  const w2usd = results[1].ok ? calcTotalUsd(results[1].pos) : 0;
 
   const [w1bal, w2bal] = await Promise.all([
     fetchWalletBalance(WALLETS[0].addr),
