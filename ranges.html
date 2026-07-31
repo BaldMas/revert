@@ -462,19 +462,15 @@ async function fetchPositions(wallet) {
   });
 }
 
-/* ── DeFiLlama pool APY (CORS-enabled, keyed by fee tier) ── */
-async function fetchDeFiLlamaMap() {
+/* ── Revert Finance metrics (server-side parsed via headless chromium, apr.json) ── */
+async function fetchRevertAprMap() {
   try {
-    const r = await fetch('https://yields.llama.fi/pools', { signal: AbortSignal.timeout(15000) });
+    const r = await fetch('./apr.json?ts=' + Date.now(), { signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return {};
     const j = await r.json();
     const map = {};
-    for (const p of j.data || []) {
-      if (p.chain !== 'Base' || p.project !== 'uniswap-v3') continue;
-      const pct = parseFloat(p.poolMeta);
-      if (isNaN(pct)) continue;
-      const feeTier = Math.round(pct * 10000);
-      if (!map[feeTier] || (p.tvlUsd || 0) > (map[feeTier].tvl || 0))
-        map[feeTier] = { apy: p.apy || 0, tvl: p.tvlUsd || 0 };
+    for (const [nftId, p] of Object.entries(j.positions || {})) {
+      map[nftId] = { fee_apr: p.fee_apr, net_roi: p.net_roi };
     }
     return map;
   } catch { return {}; }
@@ -692,15 +688,18 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
       : pCur < pos.pLow
         ? `<span style="color:#6b2e2e">${fmtPct(dLow)} below</span>`
         : `<span style="color:#6b2e2e">${fmtPct(dHi)} above</span>`;
-    const apr = aprMap[pos.id];
-    const aprTxt = apr > 0 ? `<span style="color:var(--green-t)">${Math.round(apr)}%</span>` : `<span style="color:var(--dim)">-</span>`;
+    const met = aprMap[pos.id] || {};
+    const fmtMetric = v => (typeof v !== 'number')
+      ? `<span style="color:var(--dim)">-</span>`
+      : `<span style="color:${v >= 0 ? 'var(--green-t)' : 'var(--red-t)'}">${Math.round(v)}%</span>`;
     rows += `<tr>
       <td style="color:${inR?'var(--green-t)':'var(--red-t)'};font-size:10px">#${pos.id}</td>
       <td>${fmt(pos.pLow)}</td>
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
       <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
-      <td style="font-size:10px">${aprTxt}</td>
+      <td style="font-size:10px">${fmtMetric(met.fee_apr)}</td>
+      <td style="font-size:10px">${fmtMetric(met.net_roi)}</td>
       <td class="dist">${distTxt}</td>
     </tr>`;
   });
@@ -723,7 +722,7 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
 </div>
 <table class="tbl">
   <thead><tr>
-    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>APR</th><th>Distance</th>
+    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>APR</th><th>ROI</th><th>Distance</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>`;
@@ -743,34 +742,9 @@ async function main() {
   const globalMin = all.length ? Math.min(...all.map(p => p.pLow)) * 0.97 : 0;
   const globalMax = all.length ? Math.max(...all.map(p => p.pHi))  * 1.03 : 1;
 
-  const uniquePools = [...new Set(all.map(p => p.poolAddr).filter(a => a && a !== ZERO))];
-  const [poolLiqResults, llamaMap] = await Promise.all([
-    uniquePools.length ? rpcBatch(uniquePools.map(a => ({ to: a, data: SEL.liquidity }))) : Promise.resolve([]),
-    fetchDeFiLlamaMap(),
-  ]);
-
-  const poolLiqMap = {};
-  uniquePools.forEach((addr, i) => {
-    if (poolLiqResults[i] && poolLiqResults[i].length >= 66)
-      poolLiqMap[addr] = dU(poolLiqResults[i], 0);
-  });
-
-  function posApr(pos) {
-    if (!pos.inR) return 0;
-    const poolLiq = poolLiqMap[pos.poolAddr];
-    if (!poolLiq) return 0;
-    const llama = llamaMap[pos.fee];
-    if (!llama || !llama.apy || !llama.tvl) return 0;
-    const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
-    const posValue = amt0 * pos.pCur + amt1;
-    if (!posValue) return 0;
-    const annualFees = (llama.apy / 100) * llama.tvl;
-    const feeShare = Number(pos.liquidity) / Number(poolLiq);
-    return feeShare * annualFees / posValue * 100;
-  }
-
+  const revertAprMap = await fetchRevertAprMap();
   const aprMaps = results.map(r =>
-    Object.fromEntries((r.pos || []).map(pos => [pos.id, posApr(pos)]))
+    Object.fromEntries((r.pos || []).map(pos => [pos.id, revertAprMap[String(pos.id)] || {}]))
   );
 
   results.forEach((r, i) => {
