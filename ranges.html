@@ -698,8 +698,8 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
       <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
-      <td style="font-size:10px">${fmtMetric(met.fee_apr)}</td>
       <td style="font-size:10px">${fmtMetric(met.net_roi)}</td>
+      <td style="font-size:10px">${fmtMetric(met.fee_apr)}</td>
       <td class="dist">${distTxt}</td>
     </tr>`;
   });
@@ -722,7 +722,7 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
 </div>
 <table class="tbl">
   <thead><tr>
-    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>APR</th><th>ROI</th><th>Distance</th>
+    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>Total APR</th><th>Fee APR</th><th>Distance</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>`;
