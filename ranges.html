@@ -225,6 +225,19 @@ body {
 .sbar-delta { font-size: 10px; }
 .pos { color: var(--green-t); }
 .neg { color: var(--red-t); }
+.ctag {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  background: #1c2a3a;
+  border: 1px solid #2d5a8e66;
+  color: var(--blue-t);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 3px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
 </style>
 </head>
 <body>
@@ -462,18 +475,81 @@ async function fetchPositions(wallet) {
   });
 }
 
-/* ── Revert Finance metrics (server-side parsed via headless chromium, apr.json) ── */
-async function fetchRevertAprMap() {
+/* ── Revert Finance metrics + collateral data from apr.json ── */
+async function fetchAprData() {
   try {
     const r = await fetch('./apr.json?ts=' + Date.now(), { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) return {};
+    if (!r.ok) return { aprMap: {}, walletCollateral: {} };
     const j = await r.json();
-    const map = {};
+    const aprMap = {};
     for (const [nftId, p] of Object.entries(j.positions || {})) {
-      map[nftId] = { fee_apr: p.fee_apr, net_roi: p.net_roi };
+      aprMap[nftId] = {
+        fee_apr:    p.fee_apr,
+        net_roi:    p.net_roi,
+        collateral: !!p.collateral,
+        debt_usdc:  p.debt_usdc || 0,
+      };
     }
-    return map;
-  } catch { return {}; }
+    return { aprMap, walletCollateral: j.wallet_collateral || {} };
+  } catch { return { aprMap: {}, walletCollateral: {} }; }
+}
+
+/* ── Fetch positions for known NFT IDs (collateral in vault) ── */
+async function fetchCollateralPositions(nftIds) {
+  if (!nftIds.length) return [];
+  const tokenIds = nftIds.map(id => BigInt(id));
+
+  const posRes = await rpcBatch(tokenIds.map(id => ({to:CHAIN.pm, data:SEL.positions+encU(id)})));
+  const raw = posRes.map((r,i) => {
+    if (!r || r.length < 770) return null;
+    const liq = dU(r, 7);
+    if (liq === 0n) return null;
+    return { id: tokenIds[i].toString(), token0: dAddr(r,2), token1: dAddr(r,3),
+             fee: Number(dU(r,4)), tickLower: Number(dI(r,5)), tickUpper: Number(dI(r,6)), liquidity: liq };
+  }).filter(Boolean);
+  if (!raw.length) return [];
+
+  const uniqueKeys = [...new Map(raw.map(p => [`${p.token0}:${p.token1}:${p.fee}`, p])).values()];
+  const poolRes = await rpcBatch(uniqueKeys.map(p => ({to:CHAIN.factory, data:SEL.getPool+encA(p.token0)+encA(p.token1)+encU(p.fee)})));
+  const poolMap = {};
+  uniqueKeys.forEach((p,i) => {
+    if (poolRes[i] && poolRes[i] !== '0x') { const a = dAddr(poolRes[i],0); if (a !== ZERO) poolMap[`${p.token0}:${p.token1}:${p.fee}`] = a; }
+  });
+
+  const uniquePools = [...new Set(Object.values(poolMap))];
+  const s0Res = await rpcBatch(uniquePools.map(a => ({to:a, data:SEL.slot0})));
+  const slot0Map = {};
+  uniquePools.forEach((a,i) => {
+    if (s0Res[i] && s0Res[i].length >= 66)
+      slot0Map[a] = { tick: Number(dI(s0Res[i], 1)) };
+  });
+
+  const uniqueTokens = [...new Set([...raw.map(p=>p.token0),...raw.map(p=>p.token1)])];
+  const tokRes = await rpcBatch(uniqueTokens.flatMap(a => [{to:a,data:SEL.symbol},{to:a,data:SEL.decimals}]));
+  const tokenMap = {};
+  uniqueTokens.forEach((a,i) => {
+    tokenMap[a] = { symbol: dSym(tokRes[i*2]), decimals: tokRes[i*2+1] ? String(Number(dU(tokRes[i*2+1],0))) : '18' };
+  });
+
+  return raw.map(p => {
+    const key  = `${p.token0}:${p.token1}:${p.fee}`;
+    const pAddr = poolMap[key] || ZERO;
+    const s0   = slot0Map[pAddr] || { tick: 0 };
+    const t0   = tokenMap[p.token0] || { symbol:'?', decimals:'18' };
+    const t1   = tokenMap[p.token1] || { symbol:'?', decimals:'18' };
+    const d0 = parseInt(t0.decimals), d1 = parseInt(t1.decimals);
+    const flip = STABLES.has(t0.symbol) && !STABLES.has(t1.symbol);
+    const tL = flip ? -p.tickUpper : p.tickLower;
+    const tU = flip ? -p.tickLower : p.tickUpper;
+    const tC = flip ? -s0.tick     : s0.tick;
+    const dd0 = flip ? d1 : d0, dd1 = flip ? d0 : d1;
+    const pLow = t2p(tL, dd0, dd1), pHi = t2p(tU, dd0, dd1), pCur = t2p(tC, dd0, dd1);
+    const unit = flip ? t0.symbol : t1.symbol;
+    const base = flip ? t1.symbol : t0.symbol;
+    const inR  = tC >= tL && tC <= tU;
+    return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id,
+             liquidity: p.liquidity, tL, tU, tC, dd0, dd1, poolAddr: pAddr, isCollateral: true };
+  });
 }
 
 /* ── Wallet balance (Ankr multichain) ── */
@@ -692,14 +768,19 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
     const fmtMetric = v => (typeof v !== 'number')
       ? `<span style="color:var(--dim)">-</span>`
       : `<span style="color:${v >= 0 ? 'var(--green-t)' : 'var(--red-t)'}">${Math.round(v)}%</span>`;
+    const colBadge = pos.isCollateral ? '<span class="ctag">C</span>' : '';
+    const debtHtml = (met.collateral && met.debt_usdc > 0)
+      ? `<span style="color:#d29922">${fmtUsd(met.debt_usdc)}</span>`
+      : `<span style="color:var(--dim)">-</span>`;
     rows += `<tr>
-      <td style="color:${inR?'var(--green-t)':'var(--red-t)'};font-size:10px">#${pos.id}</td>
+      <td style="color:${inR?'var(--green-t)':'var(--red-t)'};font-size:10px">#${pos.id}${colBadge}</td>
       <td>${fmt(pos.pLow)}</td>
       <td>${fmt(pos.pHi)}</td>
       <td class="pwidth">= ${fmt(pos.pHi - pos.pLow)}</td>
       <td style="color:var(--orange);font-size:10px">${fmtUsd(usd)}</td>
       <td style="font-size:10px">${fmtMetric(met.net_roi)}</td>
       <td style="font-size:10px">${fmtMetric(met.fee_apr)}</td>
+      <td style="font-size:10px">${debtHtml}</td>
       <td class="dist">${distTxt}</td>
     </tr>`;
   });
@@ -722,7 +803,7 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
 </div>
 <table class="tbl">
   <thead><tr>
-    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>Total APR</th><th>Fee APR</th><th>Distance</th>
+    <th>NFT</th><th>Lower</th><th>Upper</th><th>Width</th><th>Size</th><th>Total APR</th><th>Fee APR</th><th>Debt</th><th>Distance</th>
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>`;
@@ -730,19 +811,30 @@ function renderCol(el, n, addr, positions, globalMin, globalMax, err, aprMap = {
 
 /* ── Main ── */
 async function main() {
+  const { aprMap: revertAprMap, walletCollateral } = await fetchAprData();
+
   const results = await Promise.all(
-    WALLETS.map(w =>
-      fetchPositions(w.addr)
-        .then(p => ({ ok: true, pos: p }))
-        .catch(e => ({ ok: false, err: e.message, pos: [] }))
-    )
+    WALLETS.map(async w => {
+      try {
+        const pos = await fetchPositions(w.addr);
+        const existingIds = new Set(pos.map(p => p.id));
+        const collIds = (walletCollateral[w.addr.toLowerCase()] || [])
+          .map(String).filter(id => !existingIds.has(id));
+        if (collIds.length) {
+          const collPos = await fetchCollateralPositions(collIds.map(Number));
+          pos.push(...collPos);
+        }
+        return { ok: true, pos };
+      } catch(e) {
+        return { ok: false, err: e.message, pos: [] };
+      }
+    })
   );
 
   const all = results.flatMap(r => r.pos || []);
   const globalMin = all.length ? Math.min(...all.map(p => p.pLow)) * 0.97 : 0;
   const globalMax = all.length ? Math.max(...all.map(p => p.pHi))  * 1.03 : 1;
 
-  const revertAprMap = await fetchRevertAprMap();
   const aprMaps = results.map(r =>
     Object.fromEntries((r.pos || []).map(pos => [pos.id, revertAprMap[String(pos.id)] || {}]))
   );
