@@ -1,11 +1,14 @@
 {
-  "updated_at": 1785610515,
+  "updated_at": 1785610805,
   "positions": {
     "5558551": {
       "chain": "base",
       "exchange": "uniswapv3",
       "net_roi": 126.78,
-      "fee_apr": 127.73
+      "fee_apr": 127.73,
+      "collateral": true,
+      "debt_usdc": 14501.65,
+      "vault": "0x36aeae0e411a1e28372e0d66f02e57744ebe7599"
     },
     "5558485": {
       "chain": "base",
@@ -74,5 +77,9 @@
       "fee_apr": 32.28
     }
   },
-  "wallet_collateral": {}
+  "wallet_collateral": {
+    "0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f": [
+      5558551
+    ]
+  }
 }
