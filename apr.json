@@ -1,29 +1,32 @@
 {
-  "updated_at": 1785571215,
+  "updated_at": 1785571504,
   "positions": {
     "5558551": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 128.77,
-      "fee_apr": 130.42
+      "net_roi": 128.24,
+      "fee_apr": 129.43,
+      "collateral": true,
+      "debt_usdc": 14500.84,
+      "vault": "0x36aeae0e411a1e28372e0d66f02e57744ebe7599"
     },
     "5558485": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 56.83,
-      "fee_apr": 56.92
+      "net_roi": 56.3,
+      "fee_apr": 56.39
     },
     "5476712": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 30.9,
-      "fee_apr": 69.41
+      "net_roi": 29.77,
+      "fee_apr": 69.02
     },
     "5503817": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 17.82,
-      "fee_apr": 39.33
+      "net_roi": 16.23,
+      "fee_apr": 39.07
     },
     "5587488": {
       "chain": "arbitrum",
@@ -64,8 +67,8 @@
     "5706280": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 58.98,
-      "fee_apr": 114.38
+      "net_roi": 61.78,
+      "fee_apr": 98.18
     },
     "5687925": {
       "chain": "base",
@@ -74,5 +77,9 @@
       "fee_apr": 35.77
     }
   },
-  "wallet_collateral": {}
+  "wallet_collateral": {
+    "0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f": [
+      5558551
+    ]
+  }
 }
