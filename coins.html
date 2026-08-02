@@ -265,9 +265,10 @@ body {
 /* ── Config ── */
 const WALLET = '0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f';
 const CHAINS = [
-  { name: 'base',      rpc: 'https://base-rpc.publicnode.com',              pm: '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1', factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD', badge: null },
-  { name: 'base-ps3',  rpc: 'https://base-rpc.publicnode.com',              pm: '0x46A15B0b27311cedF172AB29E4f4766fbE7F4364', factory: '0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865', badge: 'PCS' },
-  { name: 'arbitrum',  rpc: 'https://arbitrum-one-rpc.publicnode.com',     pm: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88', factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984', badge: 'arb' },
+  { name: 'base',     rpc: 'https://base-rpc.publicnode.com',           pm: '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1', factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD', badge: null },
+  { name: 'base-ps3', rpc: 'https://base-rpc.publicnode.com',           pm: '0x46A15B0b27311cedF172AB29E4f4766fbE7F4364', factory: '0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865', badge: 'PCS', masterchef: '0xC6A2Db661D5a5690172d8eB0a7DEA2d3008665A3' },
+  { name: 'bnb-ps3',  rpc: 'https://bsc-rpc.publicnode.com',            pm: '0x46A15B0b27311cedF172AB29E4f4766fbE7F4364', factory: '0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865', badge: 'PCS·BNB', masterchef: '0x556B9306565093C855AEA9AE92A594704c2Cd59e' },
+  { name: 'arbitrum', rpc: 'https://arbitrum-one-rpc.publicnode.com',   pm: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88', factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984', badge: 'arb' },
 ];
 
 /* ── ABI helpers ── */
@@ -383,18 +384,38 @@ function assignLanes(sorted) {
 }
 
 async function fetchPositions(wallet, chain) {
-  const balHex = await (await fetch(chain.rpc, {
+  const rpcCall = (to, data) => fetch(chain.rpc, {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:chain.pm,data:SEL.balanceOf+encA(wallet)},'latest']}),
+    body: JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to,data},'latest']}),
     signal: AbortSignal.timeout(12000),
-  })).json().then(j => j.result);
+  }).then(r => r.json()).then(j => j.result || '0x').catch(() => '0x');
 
-  const bal = Number(dU(balHex, 0));
-  if (bal === 0) return [];
+  // Enumerate from PM (direct ownership)
+  const seen = new Set();
+  const tokenIds = [];
+  const addIds = ids => ids.forEach(id => { const k = id.toString(); if (!seen.has(k)) { seen.add(k); tokenIds.push(id); } });
 
-  const idxCalls = Array.from({length:bal},(_,i) => ({to:chain.pm, data:SEL.tokenOfOwnerByIndex+encA(wallet)+encU(i)}));
-  const idxRes   = await rpcBatch(idxCalls, chain.rpc);
-  const tokenIds = idxRes.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean);
+  try {
+    const balHex = await rpcCall(chain.pm, SEL.balanceOf + encA(wallet));
+    const bal = Number(dU(balHex, 0));
+    if (bal > 0) {
+      const idxRes = await rpcBatch(Array.from({length:bal},(_,i) => ({to:chain.pm, data:SEL.tokenOfOwnerByIndex+encA(wallet)+encU(i)})), chain.rpc);
+      addIds(idxRes.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean));
+    }
+  } catch(e) { console.warn(chain.name, 'PM enum:', e); }
+
+  // Also enumerate from MasterChef (staked positions)
+  if (chain.masterchef) {
+    try {
+      const balHex2 = await rpcCall(chain.masterchef, SEL.balanceOf + encA(wallet));
+      const bal2 = Number(dU(balHex2, 0));
+      if (bal2 > 0) {
+        const idxRes2 = await rpcBatch(Array.from({length:bal2},(_,i) => ({to:chain.masterchef, data:SEL.tokenOfOwnerByIndex+encA(wallet)+encU(i)})), chain.rpc);
+        addIds(idxRes2.map(r => r && r !== '0x' ? dU(r, 0) : null).filter(Boolean));
+      }
+    } catch(e) { console.warn(chain.name, 'MasterChef enum:', e); }
+  }
+
 
   const posRes = await rpcBatch(tokenIds.map(id => ({to:chain.pm, data:SEL.positions+encU(id)})), chain.rpc);
   const raw = posRes.map((r,i) => {
@@ -805,7 +826,7 @@ async function main() {
   wrap.appendChild(grid);
 
   document.getElementById('ts').textContent =
-    'Base+Arb · Updated ' + new Date().toLocaleTimeString();
+    'Base+Arb+BNB · Updated ' + new Date().toLocaleTimeString();
 }
 
 main().catch(e => {
