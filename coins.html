@@ -265,8 +265,9 @@ body {
 /* ── Config ── */
 const WALLET = '0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f';
 const CHAINS = [
-  { name: 'base',     rpc: 'https://base-rpc.publicnode.com',            pm: '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1', factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD' },
-  { name: 'arbitrum', rpc: 'https://arbitrum-one-rpc.publicnode.com',     pm: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88', factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984' },
+  { name: 'base',      rpc: 'https://base.drpc.org',                      pm: '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1', factory: '0x33128a8fC17869897dcE68Ed026d694621f6FDfD', badge: null },
+  { name: 'base-ps3',  rpc: 'https://base.drpc.org',                      pm: '0x46A15B0b27311cedF172AB29E4f4766fbE7F4364', factory: '0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865', badge: 'PCS' },
+  { name: 'arbitrum',  rpc: 'https://arbitrum-one-rpc.publicnode.com',     pm: '0xC36442b4a4522E871399CD717aBDD847Ab11FE88', factory: '0x1F98431c8aD98523631AE4a59f267346ea31F984', badge: 'arb' },
 ];
 
 /* ── ABI helpers ── */
@@ -447,7 +448,8 @@ async function fetchPositions(wallet, chain) {
     const base = flip ? t1.symbol : t0.symbol;
     const inR  = tC >= tL && tC <= tU;
     return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id,
-             liquidity: p.liquidity, tL, tU, tC, dd0, dd1, poolAddr: pAddr, chain: chain.name };
+             liquidity: p.liquidity, tL, tU, tC, dd0, dd1, poolAddr: pAddr,
+             chain: chain.name, chainBadge: chain.badge || null };
   });
 }
 
@@ -522,7 +524,7 @@ async function fetchCollateralPositions(nftIds, chain) {
     const inR  = tC >= tL && tC <= tU;
     return { pLow, pHi, pCur, unit, base, inR, fee: p.fee, id: p.id,
              liquidity: p.liquidity, tL, tU, tC, dd0, dd1, poolAddr: pAddr,
-             isCollateral: true, chain: chain.name };
+             isCollateral: true, chain: chain.name, chainBadge: chain.badge || null };
   });
 }
 
@@ -589,8 +591,8 @@ function renderCoinCard(base, positions, aprMap) {
       : `<span style="color:${v >= 0 ? 'var(--green-t)' : 'var(--red-t)'}">${Math.round(v)}%</span>`;
     const colBadge   = pos.isCollateral ? '<span class="ctag">C</span>' : '';
     const feeBadge   = `<span class="fee-tag">${(pos.fee/1e4).toFixed(2)}%</span>`;
-    const chainBadge = pos.chain && pos.chain !== 'base'
-      ? `<span class="fee-tag" style="color:#a371f7;border-color:#6e40c966">${pos.chain.slice(0,3)}</span>` : '';
+    const chainBadge = pos.chainBadge
+      ? `<span class="fee-tag" style="color:#a371f7;border-color:#6e40c966">${pos.chainBadge}</span>` : '';
     const debtHtml  = (met.collateral && met.debt_usdc > 0)
       ? `<span style="color:#d29922">${fmtUsd(met.debt_usdc)}</span>`
       : `<span style="color:var(--dim)">-</span>`;
@@ -656,7 +658,9 @@ async function main() {
         const collIds = allCollIds.filter(id => {
           if (existingIds.has(id)) return false;
           const posChain = aprMap[id]?.chain || 'base';
-          return posChain === chain.name;
+          // base-ps3 is also on 'base' chain but different PM; only try on the first base protocol
+          if (chain.name === 'base-ps3') return false;
+          return posChain === chain.name || (posChain === 'base' && chain.name === 'base');
         });
         if (collIds.length) {
           const collPos = await fetchCollateralPositions(collIds.map(Number), chain);
