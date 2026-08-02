@@ -472,16 +472,16 @@ async function fetchAerodromePositions(aprJson) {
     const sym1 = pos.token1_symbol || '?';
     const d0 = pos.token0_decimals ?? 18;
     const d1 = pos.token1_decimals ?? 18;
-    const s0 = slot0Map[pos.pool] || { tick: 0 };
+    const s0 = slot0Map[pos.pool];
     const flip = STABLES.has(sym0) && !STABLES.has(sym1);
     const tL = flip ? -pos.tick_upper : pos.tick_lower;
     const tU = flip ? -pos.tick_lower : pos.tick_upper;
-    const tC = flip ? -s0.tick : s0.tick;
+    const tC = s0 ? (flip ? -s0.tick : s0.tick) : ((tL + tU) / 2);
     const dd0 = flip ? d1 : d0, dd1 = flip ? d0 : d1;
     const pLow = t2p(tL, dd0, dd1), pHi = t2p(tU, dd0, dd1), pCur = t2p(tC, dd0, dd1);
     const unit = flip ? sym0 : sym1;
     const base = flip ? sym1 : sym0;
-    const inR = tC >= tL && tC <= tU;
+    const inR = s0 ? (tC >= tL && tC <= tU) : pos.in_range;
     out.push({
       pLow, pHi, pCur, unit, base, inR,
       fee: pos.fee_tier,
@@ -663,11 +663,12 @@ function renderCoinCard(base, positions, aprMap) {
     </tr>`;
   });
 
+  const baseCoin = base.split('/')[0];
   const card = document.createElement('div');
   card.className = 'card';
   card.innerHTML = `
 <div class="card-hdr">
-  <span class="coin-tag">${base}</span>
+  <span class="coin-tag">${baseCoin}</span>
   <span class="coin-pair">${pairs}</span>
   <span class="price-badge">${fmt(pCur)} ${sorted[0].unit}</span>
   <span class="cnt">
@@ -739,11 +740,12 @@ async function main() {
     return;
   }
 
-  // Group by base token
+  // Group by base/unit pair (same price axis required for chart)
   const groups = {};
   for (const pos of positions) {
-    if (!groups[pos.base]) groups[pos.base] = [];
-    groups[pos.base].push(pos);
+    const key = `${pos.base}/${pos.unit}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(pos);
   }
 
   // Sort groups by total USD value descending
@@ -787,7 +789,7 @@ async function main() {
     </div>
     <div class="sbar-divv"></div>
     <div class="sbar-item">
-      <span class="sbar-lbl">Coins</span>
+      <span class="sbar-lbl">Pairs</span>
       <span class="sbar-val" style="color:var(--blue-t)">${sortedGroups.length}</span>
     </div>`;
 
