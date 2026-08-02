@@ -453,10 +453,53 @@ async function fetchPositions(wallet, chain) {
   });
 }
 
+async function fetchAerodromePositions(aprJson) {
+  const raw = aprJson.aerodrome || [];
+  if (!raw.length) return [];
+
+  const BASE_RPC = 'https://base-rpc.publicnode.com';
+  const uniquePools = [...new Set(raw.map(p => p.pool))];
+  const s0Res = await rpcBatch(uniquePools.map(a => ({to:a, data:SEL.slot0})), BASE_RPC);
+  const slot0Map = {};
+  uniquePools.forEach((a, i) => {
+    if (s0Res[i] && s0Res[i].length >= 66)
+      slot0Map[a] = { tick: Number(dI(s0Res[i], 1)) };
+  });
+
+  const out = [];
+  for (const pos of raw) {
+    const sym0 = pos.token0_symbol || '?';
+    const sym1 = pos.token1_symbol || '?';
+    const d0 = pos.token0_decimals ?? 18;
+    const d1 = pos.token1_decimals ?? 18;
+    const s0 = slot0Map[pos.pool] || { tick: 0 };
+    const flip = STABLES.has(sym0) && !STABLES.has(sym1);
+    const tL = flip ? -pos.tick_upper : pos.tick_lower;
+    const tU = flip ? -pos.tick_lower : pos.tick_upper;
+    const tC = flip ? -s0.tick : s0.tick;
+    const dd0 = flip ? d1 : d0, dd1 = flip ? d0 : d1;
+    const pLow = t2p(tL, dd0, dd1), pHi = t2p(tU, dd0, dd1), pCur = t2p(tC, dd0, dd1);
+    const unit = flip ? sym0 : sym1;
+    const base = flip ? sym1 : sym0;
+    const inR = tC >= tL && tC <= tU;
+    out.push({
+      pLow, pHi, pCur, unit, base, inR,
+      fee: pos.fee_tier,
+      id: String(pos.nft_id),
+      liquidity: 0n, tL, tU, tC, dd0, dd1,
+      poolAddr: pos.pool,
+      chain: 'base', chainBadge: 'AERO',
+      fromApi: true,
+      underlyingValue: pos.underlying_value || 0,
+    });
+  }
+  return out;
+}
+
 async function fetchAprData() {
   try {
     const r = await fetch('./apr.json?ts=' + Date.now(), { signal: AbortSignal.timeout(10000) });
-    if (!r.ok) return { aprMap: {}, walletCollateral: {} };
+    if (!r.ok) return { aprMap: {}, walletCollateral: {}, aprJson: {} };
     const j = await r.json();
     const aprMap = {};
     for (const [nftId, p] of Object.entries(j.positions || {})) {
@@ -467,8 +510,13 @@ async function fetchAprData() {
         debt_usdc:  p.debt_usdc || 0,
       };
     }
-    return { aprMap, walletCollateral: j.wallet_collateral || {} };
-  } catch { return { aprMap: {}, walletCollateral: {} }; }
+    for (const p of (j.aerodrome || [])) {
+      if (p.fee_apr > 0) {
+        aprMap[String(p.nft_id)] = { fee_apr: p.fee_apr };
+      }
+    }
+    return { aprMap, walletCollateral: j.wallet_collateral || {}, aprJson: j };
+  } catch { return { aprMap: {}, walletCollateral: {}, aprJson: {} }; }
 }
 
 async function fetchCollateralPositions(nftIds, chain) {
@@ -530,22 +578,27 @@ async function fetchCollateralPositions(nftIds, chain) {
 
 /* ── Render a coin card ── */
 function renderCoinCard(base, positions, aprMap) {
-  const sorted = [...positions].sort((a, b) => b.pHi - a.pHi);
+  const clamp = (p, pos) => (!isFinite(p) || p <= 0) ? pos.pCur * (p <= 0 ? 0.1 : 10) : p;
+  const sorted = [...positions].sort((a, b) => clamp(b.pHi, b) - clamp(a.pHi, a));
   const pCur   = sorted[0].pCur;
 
-  const gMin = Math.min(...sorted.map(p => p.pLow)) * 0.96;
-  const gMax = Math.max(...sorted.map(p => p.pHi))  * 1.04;
+  const clampedPrices = sorted.map(p => ({
+    pLow: clamp(p.pLow, p), pHi: clamp(p.pHi, p),
+  }));
+  const gMin = Math.min(...clampedPrices.map(p => p.pLow)) * 0.96;
+  const gMax = Math.max(...clampedPrices.map(p => p.pHi))  * 1.04;
   const range = gMax - gMin;
 
   const H = Math.max(140, sorted.length * 26 + 40);
   const yPct = p => (1 - (p - gMin) / range) * 100;
   const curY  = yPct(pCur);
 
-  const laneInfo = assignLanes(sorted);
+  const laneInfo = assignLanes(sorted.map((p, i) => ({ ...p, pLow: clampedPrices[i].pLow, pHi: clampedPrices[i].pHi })));
   let bars = '';
   sorted.forEach((pos, idx) => {
-    const yTop  = yPct(pos.pHi);
-    const yBot  = yPct(pos.pLow);
+    const cph = clampedPrices[idx];
+    const yTop  = yPct(cph.pHi);
+    const yBot  = yPct(cph.pLow);
     const top   = yTop.toFixed(2) + '%';
     const ht    = Math.max(1, yBot - yTop).toFixed(2) + '%';
     const cls   = pos.inR ? 'in' : 'out';
@@ -569,6 +622,7 @@ function renderCoinCard(base, positions, aprMap) {
 
   // Total USD in group
   const totalUsd = sorted.reduce((s, pos) => {
+    if (pos.fromApi) return s + (pos.underlyingValue || 0);
     const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
     return s + amt0 * pos.pCur + amt1;
   }, 0);
@@ -578,8 +632,8 @@ function renderCoinCard(base, positions, aprMap) {
     const inR    = pos.inR;
     const dLow   = (pCur - pos.pLow) / pCur * 100;
     const dHi    = (pos.pHi - pCur)  / pCur * 100;
-    const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
-    const usd    = amt0 * pos.pCur + amt1;
+    const { amt0, amt1 } = pos.fromApi ? { amt0: 0, amt1: 0 } : calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
+    const usd    = pos.fromApi ? (pos.underlyingValue || 0) : (amt0 * pos.pCur + amt1);
     const distTxt = inR
       ? `<span style="color:#3a6040">${fmtPct(dLow)}</span> <span style="color:var(--dim)">·</span> <span style="color:#3a6040">${fmtPct(dHi)}</span>`
       : pCur < pos.pLow
@@ -593,7 +647,7 @@ function renderCoinCard(base, positions, aprMap) {
     const feeBadge   = `<span class="fee-tag">${(pos.fee/1e4).toFixed(2)}%</span>`;
     const chainBadge = pos.chainBadge
       ? `<span class="fee-tag" style="color:#a371f7;border-color:#6e40c966">${pos.chainBadge}</span>` : '';
-    const debtHtml  = (met.collateral && met.debt_usdc > 0)
+    const debtHtml   = (met.collateral && met.debt_usdc > 0)
       ? `<span style="color:#d29922">${fmtUsd(met.debt_usdc)}</span>`
       : `<span style="color:var(--dim)">-</span>`;
     rows += `<tr>
@@ -644,35 +698,35 @@ async function main() {
   const short = WALLET.slice(0,8) + '...' + WALLET.slice(-6);
   document.getElementById('waddr').textContent = short;
 
-  const { aprMap, walletCollateral } = await fetchAprData();
+  const { aprMap, walletCollateral, aprJson } = await fetchAprData();
 
   let positions;
   try {
-    // Fetch all chains in parallel
-    const chainResults = await Promise.all(CHAINS.map(async chain => {
-      try {
-        const pos = await fetchPositions(WALLET, chain);
-        const existingIds = new Set(pos.map(p => p.id));
-        // Collateral: only on chains where apr.json says so (keyed by chain name)
-        const allCollIds = (walletCollateral[WALLET.toLowerCase()] || []).map(String);
-        const collIds = allCollIds.filter(id => {
-          if (existingIds.has(id)) return false;
-          const posChain = aprMap[id]?.chain || 'base';
-          // base-ps3 is also on 'base' chain but different PM; only try on the first base protocol
-          if (chain.name === 'base-ps3') return false;
-          return posChain === chain.name || (posChain === 'base' && chain.name === 'base');
-        });
-        if (collIds.length) {
-          const collPos = await fetchCollateralPositions(collIds.map(Number), chain);
-          pos.push(...collPos);
+    const [chainResults, aeroPos] = await Promise.all([
+      Promise.all(CHAINS.map(async chain => {
+        try {
+          const pos = await fetchPositions(WALLET, chain);
+          const existingIds = new Set(pos.map(p => p.id));
+          const allCollIds = (walletCollateral[WALLET.toLowerCase()] || []).map(String);
+          const collIds = allCollIds.filter(id => {
+            if (existingIds.has(id)) return false;
+            const posChain = aprMap[id]?.chain || 'base';
+            if (chain.name === 'base-ps3') return false;
+            return posChain === chain.name || (posChain === 'base' && chain.name === 'base');
+          });
+          if (collIds.length) {
+            const collPos = await fetchCollateralPositions(collIds.map(Number), chain);
+            pos.push(...collPos);
+          }
+          return pos;
+        } catch(e) {
+          console.warn(`Chain ${chain.name} error:`, e);
+          return [];
         }
-        return pos;
-      } catch(e) {
-        console.warn(`Chain ${chain.name} error:`, e);
-        return [];
-      }
-    }));
-    positions = chainResults.flat();
+      })),
+      fetchAerodromePositions(aprJson),
+    ]);
+    positions = [...chainResults.flat(), ...aeroPos];
   } catch(e) {
     document.getElementById('grid-wrap').innerHTML =
       `<div class="msg" style="color:#f85149">Error: ${e.message}</div>`;
@@ -695,6 +749,7 @@ async function main() {
   // Sort groups by total USD value descending
   const sortedGroups = Object.entries(groups).sort((a, b) => {
     const sumUsd = arr => arr.reduce((s, pos) => {
+      if (pos.fromApi) return s + (pos.underlyingValue || 0);
       const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
       return s + amt0 * pos.pCur + amt1;
     }, 0);
@@ -703,6 +758,7 @@ async function main() {
 
   // Stats bar
   const totalUsd = positions.reduce((s, pos) => {
+    if (pos.fromApi) return s + (pos.underlyingValue || 0);
     const { amt0, amt1 } = calcAmounts(pos.liquidity, pos.tL, pos.tU, pos.tC, pos.dd0, pos.dd1);
     return s + amt0 * pos.pCur + amt1;
   }, 0);
@@ -747,7 +803,7 @@ async function main() {
   wrap.appendChild(grid);
 
   document.getElementById('ts').textContent =
-    'Base · Updated ' + new Date().toLocaleTimeString();
+    'Base+Arb · Updated ' + new Date().toLocaleTimeString();
 }
 
 main().catch(e => {

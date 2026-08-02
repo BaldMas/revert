@@ -18,11 +18,14 @@ WALLETS = [
     '0xdd1fbdbbaaed09bcfdfb0b7a7d001ab5791c3511',
 ]
 
+# Wallet for Aerodrome (wallet= endpoint, not account=)
+AERODROME_WALLET = '0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f'
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUT_PATH = os.path.join(BASE_DIR, 'apr.json')
 CHAIN_ID = 8453
 API_BASE = 'https://api.revert.finance/v1'
-RPC_BASE = 'https://base.drpc.org'
+RPC_BASE = 'https://base-rpc.publicnode.com'
 PM_BASE  = '0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1'
 
 
@@ -117,6 +120,53 @@ def fetch_wallet(addr):
     return positions, collateral_nfts
 
 
+def fetch_aerodrome(wallet):
+    """Fetch Aerodrome CL positions via wallet= endpoint and extract metadata."""
+    url = f'{API_BASE}/positions?wallet={wallet}'
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+    except Exception as e:
+        print(f'[aerodrome] error: {e}', file=sys.stderr)
+        return []
+
+    if not data.get('success'):
+        return []
+
+    out = []
+    for pos in data.get('data', []):
+        if pos.get('exited'):
+            continue
+        tokens = pos.get('tokens', {})
+        # Normalize token map to lowercase keys
+        tmap = {k.lower(): v for k, v in tokens.items()}
+        t0 = pos.get('token0', '').lower()
+        t1 = pos.get('token1', '').lower()
+        t0info = tmap.get(t0, {})
+        t1info = tmap.get(t1, {})
+        perf = pos.get('performance', {}).get('hodl', {})
+        out.append({
+            'nft_id': pos['nft_id'],
+            'pool': pos.get('pool', ''),
+            'token0': pos.get('token0', ''),
+            'token1': pos.get('token1', ''),
+            'token0_symbol': t0info.get('symbol', '?'),
+            'token1_symbol': t1info.get('symbol', '?'),
+            'token0_decimals': t0info.get('decimals', 18),
+            'token1_decimals': t1info.get('decimals', 18),
+            'tick_lower': pos.get('tick_lower', 0),
+            'tick_upper': pos.get('tick_upper', 0),
+            'fee_tier': pos.get('fee_tier', 0),
+            'underlying_value': round(float(pos.get('underlying_value', 0)), 2),
+            'fee_apr': round(float(perf.get('fee_apr', 0)), 4) if perf.get('fee_apr') is not None else 0.0,
+            'in_range': bool(pos.get('in_range')),
+        })
+
+    print(f'[aerodrome] {len(out)} non-exited positions', file=sys.stderr)
+    return out
+
+
 def main():
     all_positions = {}
     wallet_collateral = {}
@@ -127,17 +177,20 @@ def main():
         if collateral_ids:
             wallet_collateral[addr.lower()] = collateral_ids
 
+    aerodrome = fetch_aerodrome(AERODROME_WALLET)
+
     payload = {
         'updated_at': int(time.time()),
         'positions': all_positions,
         'wallet_collateral': wallet_collateral,
+        'aerodrome': aerodrome,
     }
     tmp = OUT_PATH + '.tmp'
     with open(tmp, 'w') as f:
         json.dump(payload, f, indent=2)
     os.replace(tmp, OUT_PATH)
     total_coll = sum(len(v) for v in wallet_collateral.values())
-    print(f'saved {OUT_PATH}: {len(all_positions)} positions, {total_coll} collateral')
+    print(f'saved {OUT_PATH}: {len(all_positions)} positions, {total_coll} collateral, {len(aerodrome)} aerodrome')
 
 
 if __name__ == '__main__':
