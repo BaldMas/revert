@@ -1,5 +1,5 @@
 {
-  "updated_at": 1785769207,
+  "updated_at": 1785769506,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -31,26 +31,26 @@
     "5587488": {
       "chain": "arbitrum",
       "exchange": "uniswapv3",
-      "net_roi": 12.29,
-      "fee_apr": 14.66
+      "net_roi": 13.34,
+      "fee_apr": 14.67
     },
     "5645764": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 46.71,
-      "fee_apr": 111.51
+      "net_roi": 54.76,
+      "fee_apr": 108.98
+    },
+    "5645773": {
+      "chain": "base",
+      "exchange": "uniswapv3",
+      "net_roi": 46.29,
+      "fee_apr": 44.6
     },
     "5645852": {
       "chain": "base",
       "exchange": "uniswapv3",
       "net_roi": 43.42,
       "fee_apr": 43.46
-    },
-    "5645773": {
-      "chain": "base",
-      "exchange": "uniswapv3",
-      "net_roi": 37.61,
-      "fee_apr": 38.17
     },
     "5645838": {
       "chain": "base",
@@ -61,14 +61,14 @@
     "5575623": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 60.41,
-      "fee_apr": 83.24
+      "net_roi": 71.26,
+      "fee_apr": 83.95
     },
     "5687925": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 3.65,
-      "fee_apr": 30.95
+      "net_roi": 9.16,
+      "fee_apr": 31.47
     }
   },
   "wallet_collateral": {
@@ -974,22 +974,6 @@
       "in_range": false
     },
     {
-      "nft_id": 25893629,
-      "pool": "0x22aee3699b6a0fed71490c103bd4e5f3309891d5",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-      "token0_symbol": "WETH",
-      "token1_symbol": "cbBTC",
-      "token0_decimals": 18,
-      "token1_decimals": 8,
-      "tick_lower": -262829,
-      "tick_upper": -262729,
-      "fee_tier": "100",
-      "underlying_value": 502.14,
-      "fee_apr": 317.6662,
-      "in_range": false
-    },
-    {
       "nft_id": 47143394,
       "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1674,6 +1658,22 @@
       "tick_upper": -192900,
       "fee_tier": "500",
       "underlying_value": 736.37,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 30178471,
+      "pool": "0x0392b12a1ceb0cd13af5ea448cf5586ea609852d",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0xf43eb8de897fbc7f2502483b2bef7bb9ea179229",
+      "token0_symbol": "WETH",
+      "token1_symbol": "ZEN",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 57700,
+      "tick_upper": 57800,
+      "fee_tier": "500",
+      "underlying_value": 505.82,
       "fee_apr": 0.0,
       "in_range": false
     }
