@@ -1,5 +1,5 @@
 {
-  "updated_at": 1786197006,
+  "updated_at": 1786197306,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -19,8 +19,8 @@
     "5587488": {
       "chain": "arbitrum",
       "exchange": "uniswapv3",
-      "net_roi": 10.59,
-      "fee_apr": 13.68
+      "net_roi": 10.78,
+      "fee_apr": 13.65
     },
     "5503817": {
       "chain": "base",
@@ -37,8 +37,8 @@
     "5645852": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 31.66,
-      "fee_apr": 31.68
+      "net_roi": 31.42,
+      "fee_apr": 31.45
     },
     "5645773": {
       "chain": "base",
@@ -395,22 +395,6 @@
       "fee_tier": "100",
       "underlying_value": 15881.14,
       "fee_apr": 0.0007,
-      "in_range": false
-    },
-    {
-      "nft_id": 40665018,
-      "pool": "0xe30d5bf485f7476ac15884a28ffb3c9cea635dcb",
-      "token0": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "AVNT",
-      "token1_symbol": "USDC",
-      "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -287144,
-      "tick_upper": -287143,
-      "fee_tier": "100",
-      "underlying_value": 584.35,
-      "fee_apr": 0.0,
       "in_range": false
     },
     {
@@ -1086,6 +1070,22 @@
       "in_range": false
     },
     {
+      "nft_id": 28851705,
+      "pool": "0x56b92e5b391dbfb8b8028ac95a4b97f52ffeb416",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x98d0baa52b2d063e780de12f615f963fe8537553",
+      "token0_symbol": "WETH",
+      "token1_symbol": "KAITO",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 81800,
+      "tick_upper": 81900,
+      "fee_tier": "500",
+      "underlying_value": 566.6,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 27003124,
       "pool": "0x70acdf2ad0bf2402c957154f944c19ef4e1cbae1",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1177,8 +1177,8 @@
       "tick_lower": -262829,
       "tick_upper": -262729,
       "fee_tier": "100",
-      "underlying_value": 511.06,
-      "fee_apr": 317.2419,
+      "underlying_value": 511.39,
+      "fee_apr": 317.2432,
       "in_range": false
     },
     {
@@ -1290,6 +1290,22 @@
       "tick_upper": -192900,
       "fee_tier": "500",
       "underlying_value": 751.75,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 40665018,
+      "pool": "0xe30d5bf485f7476ac15884a28ffb3c9cea635dcb",
+      "token0": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "AVNT",
+      "token1_symbol": "USDC",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -287144,
+      "tick_upper": -287143,
+      "fee_tier": "100",
+      "underlying_value": 577.85,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -1660,22 +1676,6 @@
       "underlying_value": 700.63,
       "fee_apr": 0.0,
       "in_range": false
-    },
-    {
-      "nft_id": 46954031,
-      "pool": "0x4858ba5a92a23de1b2dbb3509b01d0a9f0e0756a",
-      "token0": "0x1217bfe6c773eec6cc4a38b5dc45b92292b6e189",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "oUSDT",
-      "token1_symbol": "USDC",
-      "token0_decimals": 6,
-      "token1_decimals": 6,
-      "tick_lower": -7,
-      "tick_upper": -5,
-      "fee_tier": "100",
-      "underlying_value": 14980.94,
-      "fee_apr": 0.0713,
-      "in_range": true
     }
   ]
 }
