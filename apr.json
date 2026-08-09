@@ -1,5 +1,5 @@
 {
-  "updated_at": 1786281006,
+  "updated_at": 1786281306,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -7,7 +7,7 @@
       "net_roi": 104.9,
       "fee_apr": 118.0,
       "collateral": true,
-      "debt_usdc": 14517.23,
+      "debt_usdc": 14517.24,
       "vault": "0x36aeae0e411a1e28372e0d66f02e57744ebe7599"
     },
     "5558485": {
@@ -55,8 +55,8 @@
     "5575623": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 77.6,
-      "fee_apr": 77.73
+      "net_roi": 77.22,
+      "fee_apr": 77.41
     },
     "5733646": {
       "chain": "base",
@@ -990,22 +990,6 @@
       "in_range": false
     },
     {
-      "nft_id": 46992994,
-      "pool": "0x22a52bb644f855ebd5ca2edb643ff70222d70c31",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
-      "token0_symbol": "WETH",
-      "token1_symbol": "AIXBT",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 115000,
-      "tick_upper": 115200,
-      "fee_tier": "3000",
-      "underlying_value": 622.87,
-      "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
       "nft_id": 25916531,
       "pool": "0xc200f21efe67c7f41b81a854c26f9cda80593065",
       "token0": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
@@ -1674,6 +1658,22 @@
       "tick_upper": -69700,
       "fee_tier": "500",
       "underlying_value": 2227164.38,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 27726284,
+      "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "WETH",
+      "token1_symbol": "USDC",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -192300,
+      "tick_upper": -192200,
+      "fee_tier": "500",
+      "underlying_value": 103490.12,
       "fee_apr": 0.0,
       "in_range": false
     }
