@@ -1,5 +1,5 @@
 {
-  "updated_at": 1786561206,
+  "updated_at": 1786561506,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -16,8 +16,8 @@
     "5587488": {
       "chain": "arbitrum",
       "exchange": "uniswapv3",
-      "net_roi": 7.8,
-      "fee_apr": 12.74
+      "net_roi": 8.15,
+      "fee_apr": 12.72
     },
     "5503817": {
       "chain": "base",
@@ -28,8 +28,8 @@
     "5645764": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 101.93,
-      "fee_apr": 111.11
+      "net_roi": 101.84,
+      "fee_apr": 110.89
     },
     "5645852": {
       "chain": "base",
@@ -40,8 +40,8 @@
     "5645773": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 22.92,
-      "fee_apr": 24.06
+      "net_roi": 22.74,
+      "fee_apr": 23.87
     },
     "5645838": {
       "chain": "base",
@@ -52,14 +52,14 @@
     "5575623": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 71.57,
-      "fee_apr": 74.78
+      "net_roi": 71.42,
+      "fee_apr": 74.6
     },
     "5687925": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 23.32,
-      "fee_apr": 25.34
+      "net_roi": 23.25,
+      "fee_apr": 25.24
     }
   },
   "wallet_collateral": {},
@@ -333,6 +333,22 @@
       "tick_upper": -263600,
       "fee_tier": "500",
       "underlying_value": 35773.55,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 28023354,
+      "pool": "0x363d1607b8da83d6b6ea76d017ceecf1316bb08a",
+      "token0": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token1": "0xcbd06e5a2b0c65597161de254aa074e489deb510",
+      "token0_symbol": "cbBTC",
+      "token1_symbol": "cbDOGE",
+      "token0_decimals": 8,
+      "token1_decimals": 8,
+      "tick_lower": 130700,
+      "tick_upper": 130800,
+      "fee_tier": "500",
+      "underlying_value": 57971.04,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -753,22 +769,6 @@
       "in_range": false
     },
     {
-      "nft_id": 27542237,
-      "pool": "0xc900ea56b5227ae2d95c288a2597b278cbf741dd",
-      "token0": "0x9b8df6e244526ab5f6e6400d331db28c8fdddb55",
-      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-      "token0_symbol": "uSOL",
-      "token1_symbol": "cbBTC",
-      "token0_decimals": 18,
-      "token1_decimals": 8,
-      "tick_lower": -293000,
-      "tick_upper": -292800,
-      "fee_tier": "3000",
-      "underlying_value": 63553.4,
-      "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
       "nft_id": 29827801,
       "pool": "0x4e962bb3889bf030368f56810a9c96b83cb3e778",
       "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -977,6 +977,22 @@
       "in_range": false
     },
     {
+      "nft_id": 27542237,
+      "pool": "0xc900ea56b5227ae2d95c288a2597b278cbf741dd",
+      "token0": "0x9b8df6e244526ab5f6e6400d331db28c8fdddb55",
+      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token0_symbol": "uSOL",
+      "token1_symbol": "cbBTC",
+      "token0_decimals": 18,
+      "token1_decimals": 8,
+      "tick_lower": -293000,
+      "tick_upper": -292800,
+      "fee_tier": "3000",
+      "underlying_value": 62737.26,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 27025222,
       "pool": "0x4e829f8a5213c42535ab84aa40bd4adcce9cba02",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1134,22 +1150,6 @@
       "fee_tier": "100",
       "underlying_value": 14985.33,
       "fee_apr": 0.0719,
-      "in_range": false
-    },
-    {
-      "nft_id": 47143394,
-      "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "WETH",
-      "token1_symbol": "USDC",
-      "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -196300,
-      "tick_upper": -196200,
-      "fee_tier": "500",
-      "underlying_value": 63009.05,
-      "fee_apr": 0.0,
       "in_range": false
     },
     {
