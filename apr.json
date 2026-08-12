@@ -1,5 +1,5 @@
 {
-  "updated_at": 1786529106,
+  "updated_at": 1786529406,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -13,23 +13,23 @@
       "net_roi": 37.39,
       "fee_apr": 37.42
     },
-    "5587488": {
-      "chain": "arbitrum",
-      "exchange": "uniswapv3",
-      "net_roi": 9.09,
-      "fee_apr": 12.72
-    },
     "5503817": {
       "chain": "base",
       "exchange": "uniswapv3",
       "net_roi": 8.82,
       "fee_apr": 35.46
     },
+    "5587488": {
+      "chain": "arbitrum",
+      "exchange": "uniswapv3",
+      "net_roi": 8.43,
+      "fee_apr": 12.72
+    },
     "5645764": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 98.01,
-      "fee_apr": 107.62
+      "net_roi": 99.0,
+      "fee_apr": 107.73
     },
     "5645852": {
       "chain": "base",
@@ -40,8 +40,8 @@
     "5645773": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 23.55,
-      "fee_apr": 24.61
+      "net_roi": 22.86,
+      "fee_apr": 24.53
     },
     "5645838": {
       "chain": "base",
@@ -58,8 +58,8 @@
     "5687925": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 22.45,
-      "fee_apr": 24.88
+      "net_roi": 24.42,
+      "fee_apr": 24.87
     }
   },
   "wallet_collateral": {},
@@ -513,22 +513,6 @@
       "in_range": false
     },
     {
-      "nft_id": 27124747,
-      "pool": "0x70acdf2ad0bf2402c957154f944c19ef4e1cbae1",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-      "token0_symbol": "WETH",
-      "token1_symbol": "cbBTC",
-      "token0_decimals": 18,
-      "token1_decimals": 8,
-      "tick_lower": -265600,
-      "tick_upper": -262000,
-      "fee_tier": "500",
-      "underlying_value": 100621.2,
-      "fee_apr": 0.0,
-      "in_range": true
-    },
-    {
       "nft_id": 25404638,
       "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -737,6 +721,22 @@
       "in_range": false
     },
     {
+      "nft_id": 27297033,
+      "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "WETH",
+      "token1_symbol": "USDC",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -193000,
+      "tick_upper": -192900,
+      "fee_tier": "500",
+      "underlying_value": 102942.96,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 27030786,
       "pool": "0x22a52bb644f855ebd5ca2edb643ff70222d70c31",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -941,6 +941,22 @@
       "tick_upper": -192200,
       "fee_tier": "500",
       "underlying_value": 935.49,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 26668309,
+      "pool": "0x82321f3beb69f503380d6b233857d5c43562e2d0",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+      "token0_symbol": "WETH",
+      "token1_symbol": "AERO",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 82600,
+      "tick_upper": 82800,
+      "fee_tier": "3000",
+      "underlying_value": 100748.81,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -1341,22 +1357,6 @@
       "tick_upper": -345400,
       "fee_tier": "3000",
       "underlying_value": 11679.2,
-      "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
-      "nft_id": 27297033,
-      "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "WETH",
-      "token1_symbol": "USDC",
-      "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -193000,
-      "tick_upper": -192900,
-      "fee_tier": "500",
-      "underlying_value": 101979.14,
       "fee_apr": 0.0,
       "in_range": false
     },
