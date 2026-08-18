@@ -1,5 +1,5 @@
 {
-  "updated_at": 1787082907,
+  "updated_at": 1787083208,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -28,8 +28,8 @@
     "5645764": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 97.46,
-      "fee_apr": 104.4
+      "net_roi": 94.19,
+      "fee_apr": 104.85
     },
     "5645852": {
       "chain": "base",
@@ -40,8 +40,8 @@
     "5645773": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 16.38,
-      "fee_apr": 17.45
+      "net_roi": 15.82,
+      "fee_apr": 17.36
     },
     "5645838": {
       "chain": "base",
@@ -52,8 +52,8 @@
     "5575623": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 68.67,
-      "fee_apr": 68.36
+      "net_roi": 68.03,
+      "fee_apr": 68.24
     },
     "5781029": {
       "chain": "base",
@@ -64,8 +64,8 @@
     "5781027": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 24.72,
-      "fee_apr": 17.48
+      "net_roi": 14.16,
+      "fee_apr": 17.62
     }
   },
   "wallet_collateral": {},
@@ -115,6 +115,22 @@
       "tick_upper": 97600,
       "fee_tier": "3000",
       "underlying_value": 2482.32,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 27039460,
+      "pool": "0xdfe5f275020def30993f042174fc2d335678b626",
+      "token0": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token0_symbol": "AERO",
+      "token1_symbol": "cbBTC",
+      "token0_decimals": 18,
+      "token1_decimals": 8,
+      "tick_lower": -346400,
+      "tick_upper": -346200,
+      "fee_tier": "3000",
+      "underlying_value": 67203.99,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -631,6 +647,22 @@
       "in_range": false
     },
     {
+      "nft_id": 29289107,
+      "pool": "0xdfe5f275020def30993f042174fc2d335678b626",
+      "token0": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token0_symbol": "AERO",
+      "token1_symbol": "cbBTC",
+      "token0_decimals": 18,
+      "token1_decimals": 8,
+      "tick_lower": -348400,
+      "tick_upper": -348200,
+      "fee_tier": "3000",
+      "underlying_value": 60294.19,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 28168160,
       "pool": "0xb2cc224c1c9fee385f8ad6a55b4d94e92359dc59",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1015,6 +1047,22 @@
       "in_range": false
     },
     {
+      "nft_id": 26450875,
+      "pool": "0x70acdf2ad0bf2402c957154f944c19ef4e1cbae1",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token0_symbol": "WETH",
+      "token1_symbol": "cbBTC",
+      "token0_decimals": 18,
+      "token1_decimals": 8,
+      "tick_lower": -263200,
+      "tick_upper": -263100,
+      "fee_tier": "500",
+      "underlying_value": 51754.51,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 26578440,
       "pool": "0x3e66e55e97ce60096f74b7c475e8249f2d31a9fb",
       "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -1077,22 +1125,6 @@
       "underlying_value": 947.35,
       "fee_apr": 0.0,
       "in_range": false
-    },
-    {
-      "nft_id": 29745654,
-      "pool": "0x3f0296bf652e19bca772ec3df08b32732f93014a",
-      "token0": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
-      "token1": "0x4200000000000000000000000000000000000006",
-      "token0_symbol": "VIRTUAL",
-      "token1_symbol": "WETH",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": -86200,
-      "tick_upper": -73800,
-      "fee_tier": "500",
-      "underlying_value": 67006.87,
-      "fee_apr": 13.4361,
-      "in_range": true
     },
     {
       "nft_id": 25831610,
@@ -1171,22 +1203,6 @@
       "tick_upper": -263300,
       "fee_tier": "500",
       "underlying_value": 1310954.82,
-      "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
-      "nft_id": 26450875,
-      "pool": "0x70acdf2ad0bf2402c957154f944c19ef4e1cbae1",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-      "token0_symbol": "WETH",
-      "token1_symbol": "cbBTC",
-      "token0_decimals": 18,
-      "token1_decimals": 8,
-      "tick_lower": -263200,
-      "tick_upper": -263100,
-      "fee_tier": "500",
-      "underlying_value": 51264.27,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -1415,6 +1431,22 @@
       "in_range": false
     },
     {
+      "nft_id": 28039904,
+      "pool": "0x82321f3beb69f503380d6b233857d5c43562e2d0",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+      "token0_symbol": "WETH",
+      "token1_symbol": "AERO",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 83200,
+      "tick_upper": 83400,
+      "fee_tier": "3000",
+      "underlying_value": 64844.89,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
       "nft_id": 29288835,
       "pool": "0xdbc6998296caa1652a810dc8d3baf4a8294330f1",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1575,22 +1607,6 @@
       "in_range": false
     },
     {
-      "nft_id": 46320488,
-      "pool": "0x3f0296bf652e19bca772ec3df08b32732f93014a",
-      "token0": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
-      "token1": "0x4200000000000000000000000000000000000006",
-      "token0_symbol": "VIRTUAL",
-      "token1_symbol": "WETH",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": -82100,
-      "tick_upper": -82000,
-      "fee_tier": "500",
-      "underlying_value": 65461.86,
-      "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
       "nft_id": 27948474,
       "pool": "0x95ff4985af7ed78421215be100c18a2b987f7e90",
       "token0": "0xcb585250f852c6c6bf90434ab21a00f02833a4af",
@@ -1652,22 +1668,6 @@
       "fee_tier": "500",
       "underlying_value": 579818.82,
       "fee_apr": 0.0,
-      "in_range": false
-    },
-    {
-      "nft_id": 25371054,
-      "pool": "0x2a36148a416cba81699b555120bd65f4682bdfd2",
-      "token0": "0x1c4cca7c5db003824208adda61bd749e55f463a3",
-      "token1": "0x4200000000000000000000000000000000000006",
-      "token0_symbol": "GAME",
-      "token1_symbol": "WETH",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": -124800,
-      "tick_upper": -122800,
-      "fee_tier": "3000",
-      "underlying_value": 1494.72,
-      "fee_apr": 600.1364,
       "in_range": false
     }
   ]
