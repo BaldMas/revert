@@ -1,5 +1,5 @@
 {
-  "updated_at": 1787152210,
+  "updated_at": 1787152510,
   "positions": {
     "5558551": {
       "chain": "base",
@@ -12,6 +12,15 @@
       "exchange": "uniswapv3",
       "net_roi": 29.81,
       "fee_apr": 29.82
+    },
+    "2056537": {
+      "chain": "base",
+      "exchange": "pancakeswapv3",
+      "net_roi": 15.82,
+      "fee_apr": 24.42,
+      "collateral": true,
+      "debt_usdc": 0.0,
+      "vault": "0x5ec4f99f342038c67a312a166ff56e6d70383d86"
     },
     "5587488": {
       "chain": "arbitrum",
@@ -62,7 +71,11 @@
       "fee_apr": 15.6
     }
   },
-  "wallet_collateral": {},
+  "wallet_collateral": {
+    "0x9c16bc8f1104e4d2f72267eb981fa12de7cc4a6f": [
+      2056537
+    ]
+  },
   "aerodrome": [
     {
       "nft_id": 25739490,
