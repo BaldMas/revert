@@ -98,8 +98,8 @@ def fetch_wallet(addr):
         if perf.get('fee_apr') is not None:
             entry['fee_apr'] = round(float(perf['fee_apr']), 2)
 
-        # Collateral check only for Base chain (our RPC)
-        if pos.get('network') == 'base':
+        # Collateral check only for Uniswap V3 on Base (we only have Uniswap PM address)
+        if pos.get('network') == 'base' and pos.get('exchange') == 'uniswapv3':
             try:
                 owner = get_owner(int(nft_id))
                 if owner and owner.lower() != addr.lower():
