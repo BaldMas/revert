@@ -1,6 +1,5 @@
 #!/bin/bash
-# Обновляет apr.json (парсинг revert.finance через headless-chromium)
-# и коммитит + пушит на GitHub Pages, если есть изменения.
+# Обновляет apr.json и отправляет уведомления об изменениях LP1 в Telegram.
 
 set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -15,6 +14,9 @@ echo "[$(date '+%F %T')] fetch start" >> "$LOG"
 timeout 240 python3 fetch_revert_apr.py >> "$LOG" 2>&1 || {
     echo "[$(date '+%F %T')] fetch failed" >> "$LOG"; exit 1;
 }
+
+# LP1 notifications run on every tick (range changes don't always affect APR)
+python3 notify_lp.py >> "$LOG" 2>&1 || true
 
 if git diff --quiet apr.json 2>/dev/null; then
     echo "[$(date '+%F %T')] no changes" >> "$LOG"
