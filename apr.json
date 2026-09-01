@@ -1,5 +1,5 @@
 {
-  "updated_at": 1788291306,
+  "updated_at": 1788291612,
   "positions": {
     "2091035": {
       "chain": "base",
@@ -16,8 +16,8 @@
     "5665468": {
       "chain": "arbitrum",
       "exchange": "uniswapv3",
-      "net_roi": 25.44,
-      "fee_apr": 25.71
+      "net_roi": 25.32,
+      "fee_apr": 25.86
     },
     "2094538": {
       "chain": "base",
@@ -52,8 +52,8 @@
     "5882398": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 43.44,
-      "fee_apr": 45.01
+      "net_roi": 41.28,
+      "fee_apr": 45.95
     }
   },
   "wallet_collateral": {},
@@ -390,8 +390,8 @@
       "tick_lower": -887220,
       "tick_upper": 887220,
       "fee_tier": "3000",
-      "underlying_value": 16858.46,
-      "fee_apr": 164.2978,
+      "underlying_value": 16735.35,
+      "fee_apr": 163.5539,
       "in_range": true
     },
     {
@@ -662,8 +662,8 @@
       "tick_lower": -887200,
       "tick_upper": 887200,
       "fee_tier": "10000",
-      "underlying_value": 1181.26,
-      "fee_apr": 12386.488,
+      "underlying_value": 1180.75,
+      "fee_apr": 12357.3728,
       "in_range": true
     },
     {
@@ -1403,22 +1403,6 @@
       "in_range": true
     },
     {
-      "nft_id": 5243238,
-      "pool": "0x7c7420dd105e2779316423ba3e973f434315efa9",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-      "token0_symbol": "WETH",
-      "token1_symbol": "cbBTC",
-      "token0_decimals": 18,
-      "token1_decimals": 8,
-      "tick_lower": -264914,
-      "tick_upper": -264913,
-      "fee_tier": "100",
-      "underlying_value": 1142.13,
-      "fee_apr": 0.0,
-      "in_range": true
-    },
-    {
       "nft_id": 60966,
       "pool": "0x9bd730ddcfe6b5b9ecba1cf66e153adaa807e238",
       "token0": "0x64b986211c0cc675143f895c437b79c3cadf364a",
@@ -1657,6 +1641,22 @@
       "underlying_value": 520.79,
       "fee_apr": 11760.9437,
       "in_range": false
+    },
+    {
+      "nft_id": 925620,
+      "pool": "0xf4274130137eee20bad928b593d992716516ceb9",
+      "token0": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+      "token1": "0x8005d266423c7ea827372c9c864491e5786600ea",
+      "token0_symbol": "USDG",
+      "token1_symbol": "LLY",
+      "token0_decimals": 6,
+      "token1_decimals": 18,
+      "tick_lower": 205000,
+      "tick_upper": 206600,
+      "fee_tier": "10000",
+      "underlying_value": 26937.12,
+      "fee_apr": 11560.34,
+      "in_range": true
     }
   ]
 }
