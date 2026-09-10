@@ -1,5 +1,5 @@
 {
-  "updated_at": 1789002608,
+  "updated_at": 1789002908,
   "positions": {
     "939046": {
       "chain": "robinhood",
@@ -7,23 +7,23 @@
       "net_roi": 343.45,
       "fee_apr": 349.08
     },
+    "2091035": {
+      "chain": "base",
+      "exchange": "pancakeswapv3",
+      "net_roi": 150.97,
+      "fee_apr": 85.39
+    },
     "939129": {
       "chain": "robinhood",
       "exchange": "uniswapv3",
       "net_roi": 150.19,
       "fee_apr": 150.31
     },
-    "2091035": {
-      "chain": "base",
-      "exchange": "pancakeswapv3",
-      "net_roi": 149.6,
-      "fee_apr": 85.4
-    },
     "2094538": {
       "chain": "base",
       "exchange": "pancakeswapv3",
-      "net_roi": 62.37,
-      "fee_apr": 35.68
+      "net_roi": 61.44,
+      "fee_apr": 35.6
     },
     "7131839": {
       "chain": "bnb",
@@ -40,8 +40,8 @@
     "5665468": {
       "chain": "arbitrum",
       "exchange": "uniswapv3",
-      "net_roi": 20.57,
-      "fee_apr": 20.57
+      "net_roi": 20.48,
+      "fee_apr": 20.52
     },
     "7302835": {
       "chain": "bnb",
@@ -64,8 +64,8 @@
     "983988": {
       "chain": "robinhood",
       "exchange": "uniswapv3",
-      "net_roi": -43.42,
-      "fee_apr": 19.29
+      "net_roi": -25.22,
+      "fee_apr": 18.59
     },
     "1052135": {
       "chain": "robinhood",
@@ -82,14 +82,14 @@
     "5926946": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 66.85,
-      "fee_apr": 88.73
+      "net_roi": 75.62,
+      "fee_apr": 88.9
     },
     "5882398": {
       "chain": "base",
       "exchange": "uniswapv3",
-      "net_roi": 42.14,
-      "fee_apr": 42.16
+      "net_roi": 42.05,
+      "fee_apr": 42.15
     }
   },
   "wallet_collateral": {},
@@ -351,22 +351,6 @@
       "in_range": false
     },
     {
-      "nft_id": 5888998,
-      "pool": "0xbf9ec829bd84bb50aef89c7dc027c94bef5baef9",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0x51f23b2f6bd81b9cb2ee7190d196446fcafce18b",
-      "token0_symbol": "WETH",
-      "token1_symbol": "FOMO",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 208242,
-      "tick_upper": 217242,
-      "fee_tier": "100",
-      "underlying_value": 2455.77,
-      "fee_apr": 76351.9839,
-      "in_range": false
-    },
-    {
       "nft_id": 48555957,
       "pool": "0x3f0296bf652e19bca772ec3df08b32732f93014a",
       "token0": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
@@ -381,6 +365,22 @@
       "underlying_value": 8271.38,
       "fee_apr": 0.0,
       "in_range": true
+    },
+    {
+      "nft_id": 5888998,
+      "pool": "0xbf9ec829bd84bb50aef89c7dc027c94bef5baef9",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0x51f23b2f6bd81b9cb2ee7190d196446fcafce18b",
+      "token0_symbol": "WETH",
+      "token1_symbol": "FOMO",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 208242,
+      "tick_upper": 217242,
+      "fee_tier": "100",
+      "underlying_value": 2467.72,
+      "fee_apr": 75894.1923,
+      "in_range": false
     },
     {
       "nft_id": 48413685,
@@ -410,8 +410,8 @@
       "tick_lower": -109000,
       "tick_upper": -84000,
       "fee_tier": "10000",
-      "underlying_value": 670.09,
-      "fee_apr": 71322.5948,
+      "underlying_value": 674.24,
+      "fee_apr": 71322.5924,
       "in_range": false
     },
     {
@@ -1018,7 +1018,7 @@
       "tick_lower": 219200,
       "tick_upper": 237800,
       "fee_tier": "10000",
-      "underlying_value": 1716.76,
+      "underlying_value": 1726.07,
       "fee_apr": 10163.4244,
       "in_range": false
     },
@@ -1114,8 +1114,8 @@
       "tick_lower": -887220,
       "tick_upper": 887220,
       "fee_tier": "3000",
-      "underlying_value": 17000.54,
-      "fee_apr": 134.8178,
+      "underlying_value": 17096.84,
+      "fee_apr": 134.8432,
       "in_range": true
     },
     {
@@ -1562,8 +1562,8 @@
       "tick_lower": -887200,
       "tick_upper": 887200,
       "fee_tier": "10000",
-      "underlying_value": 1186.91,
-      "fee_apr": 12299.964,
+      "underlying_value": 1187.25,
+      "fee_apr": 12298.551,
       "in_range": true
     },
     {
