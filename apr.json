@@ -1,5 +1,5 @@
 {
-  "updated_at": 1789129806,
+  "updated_at": 1789130106,
   "positions": {
     "939046": {
       "chain": "robinhood",
@@ -10,8 +10,8 @@
     "2091035": {
       "chain": "base",
       "exchange": "pancakeswapv3",
-      "net_roi": 152.12,
-      "fee_apr": 84.16
+      "net_roi": 151.73,
+      "fee_apr": 83.98
     },
     "939129": {
       "chain": "robinhood",
@@ -22,8 +22,8 @@
     "2094538": {
       "chain": "base",
       "exchange": "pancakeswapv3",
-      "net_roi": 49.24,
-      "fee_apr": 32.89
+      "net_roi": 49.32,
+      "fee_apr": 32.8
     },
     "7131839": {
       "chain": "bnb",
@@ -839,22 +839,6 @@
       "underlying_value": 29366.17,
       "fee_apr": 0.0,
       "in_range": false
-    },
-    {
-      "nft_id": 73590397,
-      "pool": "0x4e829f8a5213c42535ab84aa40bd4adcce9cba02",
-      "token0": "0x4200000000000000000000000000000000000006",
-      "token1": "0x532f27101965dd16442e59d40670faf5ebb142e4",
-      "token0_symbol": "WETH",
-      "token1_symbol": "BRETT",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 131600,
-      "tick_upper": 131800,
-      "fee_tier": "3000",
-      "underlying_value": 16055.02,
-      "fee_apr": 7.1796,
-      "in_range": true
     },
     {
       "nft_id": 48438155,
@@ -1684,9 +1668,25 @@
       "tick_lower": -349000,
       "tick_upper": -348800,
       "fee_tier": "3000",
-      "underlying_value": 34496.65,
+      "underlying_value": 13658.54,
       "fee_apr": 0.0,
       "in_range": true
+    },
+    {
+      "nft_id": 36007084,
+      "pool": "0x22aee3699b6a0fed71490c103bd4e5f3309891d5",
+      "token0": "0x4200000000000000000000000000000000000006",
+      "token1": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "token0_symbol": "WETH",
+      "token1_symbol": "cbBTC",
+      "token0_decimals": 18,
+      "token1_decimals": 8,
+      "tick_lower": -264133,
+      "tick_upper": -264132,
+      "fee_tier": "100",
+      "underlying_value": 14791.09,
+      "fee_apr": 0.0,
+      "in_range": false
     }
   ]
 }
