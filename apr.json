@@ -1,5 +1,5 @@
 {
-  "updated_at": 1789317007,
+  "updated_at": 1789317307,
   "positions": {
     "939046": {
       "chain": "robinhood",
@@ -34,14 +34,14 @@
     "7131839": {
       "chain": "bnb",
       "exchange": "pancakeswapv3",
-      "net_roi": 28.47,
-      "fee_apr": 28.5
+      "net_roi": 28.42,
+      "fee_apr": 28.45
     },
     "7302835": {
       "chain": "bnb",
       "exchange": "pancakeswapv3",
-      "net_roi": 17.45,
-      "fee_apr": 17.44
+      "net_roi": 17.26,
+      "fee_apr": 17.35
     },
     "5665468": {
       "chain": "arbitrum",
@@ -70,14 +70,14 @@
     "1144663": {
       "chain": "robinhood",
       "exchange": "uniswapv3",
-      "net_roi": 1165.75,
-      "fee_apr": 1221.52
+      "net_roi": 1151.25,
+      "fee_apr": 1201.54
     },
     "1144658": {
       "chain": "robinhood",
       "exchange": "uniswapv3",
-      "net_roi": 334.02,
-      "fee_apr": 1189.7
+      "net_roi": -155.47,
+      "fee_apr": 1167.92
     }
   },
   "wallet_collateral": {},
@@ -339,22 +339,6 @@
       "in_range": false
     },
     {
-      "nft_id": 76626005,
-      "pool": "0xd7338b6f338da54b922bbbc6fbe3efedd5ce35fa",
-      "token0": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "FLOCK",
-      "token1_symbol": "USDC",
-      "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -301900,
-      "tick_upper": -301800,
-      "fee_tier": "500",
-      "underlying_value": 1072.39,
-      "fee_apr": 0.0,
-      "in_range": true
-    },
-    {
       "nft_id": 2742941,
       "pool": "0xcd42e42bde0719b74bcc755407c8f695ec33f03d",
       "token0": "0x85824781bd1ab57a6bb9811e8164adef22e38b1d",
@@ -417,6 +401,22 @@
       "underlying_value": 2636.9,
       "fee_apr": 0.0,
       "in_range": false
+    },
+    {
+      "nft_id": 76628280,
+      "pool": "0xd7338b6f338da54b922bbbc6fbe3efedd5ce35fa",
+      "token0": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "FLOCK",
+      "token1_symbol": "USDC",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -302000,
+      "tick_upper": -301900,
+      "fee_tier": "500",
+      "underlying_value": 692.49,
+      "fee_apr": 0.0,
+      "in_range": true
     },
     {
       "nft_id": 48428264,
@@ -1102,7 +1102,7 @@
       "tick_lower": 46054,
       "tick_upper": 47007,
       "fee_tier": "100",
-      "underlying_value": 16546.05,
+      "underlying_value": 16544.64,
       "fee_apr": 0.0299,
       "in_range": false
     },
@@ -1329,6 +1329,22 @@
       "underlying_value": 676.71,
       "fee_apr": 0.0,
       "in_range": false
+    },
+    {
+      "nft_id": 4941094,
+      "pool": "0x1131db5977242a03ebead1acd18f80a9a29e5922",
+      "token0": "0x311935cd80b76769bf2ecc9d8ab7635b2139cf82",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "SOL",
+      "token1_symbol": "USDC",
+      "token0_decimals": 9,
+      "token1_decimals": 6,
+      "tick_lower": -22960,
+      "tick_upper": -22950,
+      "fee_tier": "500",
+      "underlying_value": 1436.64,
+      "fee_apr": 0.0,
+      "in_range": true
     },
     {
       "nft_id": 7424511,
@@ -1662,24 +1678,8 @@
       "tick_lower": 202480,
       "tick_upper": 203680,
       "fee_tier": "8000",
-      "underlying_value": 8556.71,
-      "fee_apr": 443.8545,
-      "in_range": true
-    },
-    {
-      "nft_id": 7420848,
-      "pool": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
-      "token0": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-      "token1": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
-      "token0_symbol": "WBNB",
-      "token1_symbol": "BREW",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 104600,
-      "tick_upper": 108800,
-      "fee_tier": "10000",
-      "underlying_value": 4385.2,
-      "fee_apr": 6855.3918,
+      "underlying_value": 8578.44,
+      "fee_apr": 429.348,
       "in_range": true
     }
   ]
