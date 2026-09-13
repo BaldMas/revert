@@ -1,5 +1,5 @@
 {
-  "updated_at": 1789323006,
+  "updated_at": 1789323306,
   "positions": {
     "939046": {
       "chain": "robinhood",
@@ -34,14 +34,14 @@
     "7131839": {
       "chain": "bnb",
       "exchange": "pancakeswapv3",
-      "net_roi": 28.42,
-      "fee_apr": 28.45
+      "net_roi": 28.37,
+      "fee_apr": 28.42
     },
     "7302835": {
       "chain": "bnb",
       "exchange": "pancakeswapv3",
-      "net_roi": 17.26,
-      "fee_apr": 17.35
+      "net_roi": 16.85,
+      "fee_apr": 17.26
     },
     "5665468": {
       "chain": "arbitrum",
@@ -190,8 +190,8 @@
       "tick_lower": -109000,
       "tick_upper": -84000,
       "fee_tier": "10000",
-      "underlying_value": 677.78,
-      "fee_apr": 71468.3237,
+      "underlying_value": 682.14,
+      "fee_apr": 71468.1035,
       "in_range": false
     },
     {
@@ -291,22 +291,6 @@
       "in_range": false
     },
     {
-      "nft_id": 1020009,
-      "pool": "0xaa34fea710a1a737840329051d81d3b0b7c564d5",
-      "token0": "0x05a3d1cd21d0c88145e82600e62e7e496e0f222b",
-      "token1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
-      "token0_symbol": "AMC",
-      "token1_symbol": "USDG",
-      "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -266460,
-      "tick_upper": -266280,
-      "fee_tier": "3000",
-      "underlying_value": 1333.14,
-      "fee_apr": 19287.3197,
-      "in_range": false
-    },
-    {
       "nft_id": 5888998,
       "pool": "0xbf9ec829bd84bb50aef89c7dc027c94bef5baef9",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -318,8 +302,8 @@
       "tick_lower": 208242,
       "tick_upper": 217242,
       "fee_tier": "100",
-      "underlying_value": 2489.22,
-      "fee_apr": 59698.39,
+      "underlying_value": 2504.33,
+      "fee_apr": 59430.9318,
       "in_range": false
     },
     {
@@ -350,8 +334,24 @@
       "tick_lower": 219200,
       "tick_upper": 237800,
       "fee_tier": "10000",
-      "underlying_value": 1740.95,
+      "underlying_value": 1751.71,
       "fee_apr": 10163.4219,
+      "in_range": false
+    },
+    {
+      "nft_id": 1020009,
+      "pool": "0xaa34fea710a1a737840329051d81d3b0b7c564d5",
+      "token0": "0x05a3d1cd21d0c88145e82600e62e7e496e0f222b",
+      "token1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+      "token0_symbol": "AMC",
+      "token1_symbol": "USDG",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -266460,
+      "tick_upper": -266280,
+      "fee_tier": "3000",
+      "underlying_value": 1349.89,
+      "fee_apr": 19321.8192,
       "in_range": false
     },
     {
@@ -371,22 +371,6 @@
       "in_range": false
     },
     {
-      "nft_id": 2742941,
-      "pool": "0xcd42e42bde0719b74bcc755407c8f695ec33f03d",
-      "token0": "0x85824781bd1ab57a6bb9811e8164adef22e38b1d",
-      "token1": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-      "token0_symbol": "Gold",
-      "token1_symbol": "WBNB",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": -887200,
-      "tick_upper": 887200,
-      "fee_tier": "10000",
-      "underlying_value": 1098.39,
-      "fee_apr": 426.6656,
-      "in_range": true
-    },
-    {
       "nft_id": 48443994,
       "pool": "0x4ba1e3e9280facbacafa7baf4ae0b78bea60beca",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -401,6 +385,22 @@
       "underlying_value": 2651.11,
       "fee_apr": 0.0,
       "in_range": false
+    },
+    {
+      "nft_id": 2742941,
+      "pool": "0xcd42e42bde0719b74bcc755407c8f695ec33f03d",
+      "token0": "0x85824781bd1ab57a6bb9811e8164adef22e38b1d",
+      "token1": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      "token0_symbol": "Gold",
+      "token1_symbol": "WBNB",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": -887200,
+      "tick_upper": 887200,
+      "fee_tier": "10000",
+      "underlying_value": 1101.33,
+      "fee_apr": 414.2875,
+      "in_range": true
     },
     {
       "nft_id": 73429646,
@@ -499,6 +499,22 @@
       "in_range": false
     },
     {
+      "nft_id": 76625575,
+      "pool": "0xd7338b6f338da54b922bbbc6fbe3efedd5ce35fa",
+      "token0": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token0_symbol": "FLOCK",
+      "token1_symbol": "USDC",
+      "token0_decimals": 18,
+      "token1_decimals": 6,
+      "tick_lower": -302300,
+      "tick_upper": -302200,
+      "fee_tier": "500",
+      "underlying_value": 1424.91,
+      "fee_apr": 0.0,
+      "in_range": true
+    },
+    {
       "nft_id": 48711292,
       "pool": "0x93617b2909a7c207e4180de0e667ea80c9bdfe9e",
       "token0": "0x1217bfe6c773eec6cc4a38b5dc45b92292b6e189",
@@ -593,22 +609,6 @@
       "underlying_value": 4729.92,
       "fee_apr": 0.0,
       "in_range": false
-    },
-    {
-      "nft_id": 6008038,
-      "pool": "0x99cf3e8bfb02c300312c53aac5d0b082e3d5975c",
-      "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token1": "0xb095274743941e953c746f9c228da9c18bb6ec29",
-      "token0_symbol": "USDC",
-      "token1_symbol": "LAPTOP",
-      "token0_decimals": 6,
-      "token1_decimals": 18,
-      "tick_lower": 286800,
-      "tick_upper": 289800,
-      "fee_tier": "3000",
-      "underlying_value": 880.36,
-      "fee_apr": 0.0,
-      "in_range": true
     },
     {
       "nft_id": 73530374,
@@ -718,8 +718,8 @@
       "tick_lower": -644760,
       "tick_upper": 875040,
       "fee_tier": "3000",
-      "underlying_value": 31069.71,
-      "fee_apr": 1138.3857,
+      "underlying_value": 31292.28,
+      "fee_apr": 1138.3756,
       "in_range": true
     },
     {
@@ -862,8 +862,8 @@
       "tick_lower": 221850,
       "tick_upper": 221860,
       "fee_tier": "500",
-      "underlying_value": 567.43,
-      "fee_apr": 2018.5715,
+      "underlying_value": 568.96,
+      "fee_apr": 2018.564,
       "in_range": false
     },
     {
@@ -993,22 +993,6 @@
       "underlying_value": 783.63,
       "fee_apr": 0.0,
       "in_range": false
-    },
-    {
-      "nft_id": 1146590,
-      "pool": "0x353c4b52b63a69971128d38f6afd846760b017fa",
-      "token0": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
-      "token1": "0xd1b0d44e4f6ed940fcc7a9f59bf30daf62ccfe3d",
-      "token0_symbol": "WETH",
-      "token1_symbol": "GITLAWB",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 181800,
-      "tick_upper": 185600,
-      "fee_tier": "10000",
-      "underlying_value": 975.79,
-      "fee_apr": 15081.3677,
-      "in_range": true
     },
     {
       "nft_id": 3052005,
@@ -1150,8 +1134,8 @@
       "tick_lower": 127800,
       "tick_upper": 134600,
       "fee_tier": "10000",
-      "underlying_value": 776.01,
-      "fee_apr": 12197.0168,
+      "underlying_value": 786.51,
+      "fee_apr": 12137.1603,
       "in_range": false
     },
     {
@@ -1166,7 +1150,7 @@
       "tick_lower": 46054,
       "tick_upper": 47007,
       "fee_tier": "100",
-      "underlying_value": 16544.64,
+      "underlying_value": 16546.28,
       "fee_apr": 0.0299,
       "in_range": false
     },
@@ -1331,22 +1315,6 @@
       "in_range": false
     },
     {
-      "nft_id": 7424511,
-      "pool": "0xe2561a789e8d94f3f9b620aaecc627e1e205fe8b",
-      "token0": "0x55d398326f99059ff775485246999027b3197955",
-      "token1": "0xca56094722450016f280c4fd6a333e5c36903827",
-      "token0_symbol": "USDT",
-      "token1_symbol": "SPX",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 32450,
-      "tick_upper": 32500,
-      "fee_tier": "2500",
-      "underlying_value": 2066.37,
-      "fee_apr": 9908.0073,
-      "in_range": true
-    },
-    {
       "nft_id": 48446438,
       "pool": "0xc200f21efe67c7f41b81a854c26f9cda80593065",
       "token0": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
@@ -1395,6 +1363,22 @@
       "in_range": false
     },
     {
+      "nft_id": 7424511,
+      "pool": "0xe2561a789e8d94f3f9b620aaecc627e1e205fe8b",
+      "token0": "0x55d398326f99059ff775485246999027b3197955",
+      "token1": "0xca56094722450016f280c4fd6a333e5c36903827",
+      "token0_symbol": "USDT",
+      "token1_symbol": "SPX",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 32450,
+      "tick_upper": 32500,
+      "fee_tier": "2500",
+      "underlying_value": 2066.52,
+      "fee_apr": 9621.0952,
+      "in_range": true
+    },
+    {
       "nft_id": 48708074,
       "pool": "0xadb8fb846dbd3bd6a23335cee65bb610c1cf0ea3",
       "token0": "0x1111111111166b7fe7bd91427724b487980afc69",
@@ -1411,19 +1395,19 @@
       "in_range": false
     },
     {
-      "nft_id": 5846402,
-      "pool": "0x1131db5977242a03ebead1acd18f80a9a29e5922",
-      "token0": "0x311935cd80b76769bf2ecc9d8ab7635b2139cf82",
-      "token1": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token0_symbol": "SOL",
-      "token1_symbol": "USDC",
-      "token0_decimals": 9,
-      "token1_decimals": 6,
-      "tick_lower": -22930,
-      "tick_upper": -22920,
-      "fee_tier": "500",
-      "underlying_value": 576.16,
-      "fee_apr": 0.0,
+      "nft_id": 7424764,
+      "pool": "0xe2561a789e8d94f3f9b620aaecc627e1e205fe8b",
+      "token0": "0x55d398326f99059ff775485246999027b3197955",
+      "token1": "0xca56094722450016f280c4fd6a333e5c36903827",
+      "token0_symbol": "USDT",
+      "token1_symbol": "SPX",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 32450,
+      "tick_upper": 32500,
+      "fee_tier": "2500",
+      "underlying_value": 614.04,
+      "fee_apr": 9456.9624,
       "in_range": true
     },
     {
@@ -1507,36 +1491,20 @@
       "in_range": false
     },
     {
-      "nft_id": 1078670,
-      "pool": "0xaa34fea710a1a737840329051d81d3b0b7c564d5",
-      "token0": "0x05a3d1cd21d0c88145e82600e62e7e496e0f222b",
+      "nft_id": 1151022,
+      "pool": "0x1a67e3a963912086c4ec5e850ab1b44edd87dfc8",
+      "token0": "0x1937cad42b17d43bb2b347ce16d5288887c46c33",
       "token1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
-      "token0_symbol": "AMC",
+      "token0_symbol": "ANTHROPICx1L",
       "token1_symbol": "USDG",
       "token0_decimals": 18,
       "token1_decimals": 6,
-      "tick_lower": -266760,
-      "tick_upper": -266640,
+      "tick_lower": -275520,
+      "tick_upper": -274620,
       "fee_tier": "3000",
-      "underlying_value": 652.28,
-      "fee_apr": 1159.0083,
-      "in_range": false
-    },
-    {
-      "nft_id": 6009409,
-      "pool": "0x99cf3e8bfb02c300312c53aac5d0b082e3d5975c",
-      "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-      "token1": "0xb095274743941e953c746f9c228da9c18bb6ec29",
-      "token0_symbol": "USDC",
-      "token1_symbol": "LAPTOP",
-      "token0_decimals": 6,
-      "token1_decimals": 18,
-      "tick_lower": 278600,
-      "tick_upper": 288400,
-      "fee_tier": "3000",
-      "underlying_value": 684.77,
-      "fee_apr": 0.0,
-      "in_range": false
+      "underlying_value": 2105.17,
+      "fee_apr": 10084.6349,
+      "in_range": true
     },
     {
       "nft_id": 48707094,
@@ -1551,6 +1519,22 @@
       "tick_upper": 123400,
       "fee_tier": "3000",
       "underlying_value": 6592.17,
+      "fee_apr": 0.0,
+      "in_range": false
+    },
+    {
+      "nft_id": 6009409,
+      "pool": "0x99cf3e8bfb02c300312c53aac5d0b082e3d5975c",
+      "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token1": "0xb095274743941e953c746f9c228da9c18bb6ec29",
+      "token0_symbol": "USDC",
+      "token1_symbol": "LAPTOP",
+      "token0_decimals": 6,
+      "token1_decimals": 18,
+      "tick_lower": 278600,
+      "tick_upper": 288400,
+      "fee_tier": "3000",
+      "underlying_value": 687.75,
       "fee_apr": 0.0,
       "in_range": false
     },
@@ -1571,7 +1555,7 @@
       "in_range": false
     },
     {
-      "nft_id": 1139571,
+      "nft_id": 1141963,
       "pool": "0x72c738cef1b456c67f5cdc511fa773f393ffda40",
       "token0": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
       "token1": "0x4eb990547bce4a982432ca88cf5fae7eed1a2d35",
@@ -1579,28 +1563,12 @@
       "token1_symbol": "FLYBRAIN",
       "token0_decimals": 18,
       "token1_decimals": 18,
-      "tick_lower": 122000,
-      "tick_upper": 125400,
+      "tick_lower": 121800,
+      "tick_upper": 125200,
       "fee_tier": "10000",
-      "underlying_value": 2641.44,
-      "fee_apr": 9336.9478,
-      "in_range": true
-    },
-    {
-      "nft_id": 1114310,
-      "pool": "0xd89f6933a8ef11c2939054c0e287ecb327817242",
-      "token0": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
-      "token1": "0xcacb0e9caccee63ec4d82952e561a291c68bcb68",
-      "token0_symbol": "WETH",
-      "token1_symbol": "GG",
-      "token0_decimals": 18,
-      "token1_decimals": 18,
-      "tick_lower": 141200,
-      "tick_upper": 148600,
-      "fee_tier": "10000",
-      "underlying_value": 820.77,
-      "fee_apr": 9866.1391,
-      "in_range": true
+      "underlying_value": 789.65,
+      "fee_apr": 8062.0051,
+      "in_range": false
     },
     {
       "nft_id": 48702310,
@@ -1619,6 +1587,22 @@
       "in_range": false
     },
     {
+      "nft_id": 1009674,
+      "pool": "0x9036a9406dac1c252c364d037f489e5f0a752f54",
+      "token0": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "token1": "0xd9db30bb0d2b8d2eae3826a1372117e058791e18",
+      "token0_symbol": "WETH",
+      "token1_symbol": "MOO",
+      "token0_decimals": 18,
+      "token1_decimals": 18,
+      "tick_lower": 109600,
+      "tick_upper": 121000,
+      "fee_tier": "10000",
+      "underlying_value": 1213.77,
+      "fee_apr": 5568.2894,
+      "in_range": true
+    },
+    {
       "nft_id": 48700182,
       "pool": "0x4d69971ccd4a636c403a3c1b00c85e99bb9b5606",
       "token0": "0x4200000000000000000000000000000000000006",
@@ -1635,19 +1619,19 @@
       "in_range": false
     },
     {
-      "nft_id": 1151022,
-      "pool": "0x1a67e3a963912086c4ec5e850ab1b44edd87dfc8",
-      "token0": "0x1937cad42b17d43bb2b347ce16d5288887c46c33",
-      "token1": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
-      "token0_symbol": "ANTHROPICx1L",
-      "token1_symbol": "USDG",
+      "nft_id": 1114310,
+      "pool": "0xd89f6933a8ef11c2939054c0e287ecb327817242",
+      "token0": "0x0bd7d308f8e1639fab988df18a8011f41eacad73",
+      "token1": "0xcacb0e9caccee63ec4d82952e561a291c68bcb68",
+      "token0_symbol": "WETH",
+      "token1_symbol": "GG",
       "token0_decimals": 18,
-      "token1_decimals": 6,
-      "tick_lower": -275520,
-      "tick_upper": -274620,
-      "fee_tier": "3000",
-      "underlying_value": 2062.98,
-      "fee_apr": 7958.2051,
+      "token1_decimals": 18,
+      "tick_lower": 141200,
+      "tick_upper": 148600,
+      "fee_tier": "10000",
+      "underlying_value": 821.4,
+      "fee_apr": 9321.7958,
       "in_range": true
     },
     {
@@ -1664,6 +1648,22 @@
       "fee_tier": "50000",
       "underlying_value": 1575.05,
       "fee_apr": 847.2527,
+      "in_range": true
+    },
+    {
+      "nft_id": 5974105,
+      "pool": "0x8b27f626ab668197000bc722a1012022caed10e2",
+      "token0": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "token1": "0xb2000000000000000000004884b426556b92883d",
+      "token0_symbol": "USDC",
+      "token1_symbol": "MSTRc",
+      "token0_decimals": 6,
+      "token1_decimals": 8,
+      "tick_lower": -2680,
+      "tick_upper": -2670,
+      "fee_tier": "500",
+      "underlying_value": 2934.29,
+      "fee_apr": 0.0,
       "in_range": true
     },
     {
